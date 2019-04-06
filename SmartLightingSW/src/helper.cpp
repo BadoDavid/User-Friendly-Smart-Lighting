@@ -31,24 +31,24 @@ void setupRGBLeds(String myChar)
   //set up LEDs
   pinMode(redPin, OUTPUT);
   //digitalWrite(redPin, LOW);
-  analogWrite(redPin,512);
-  delay(100);
-  analogWrite(redPin,1024);
-  delay(100);
+//  analogWrite(redPin,512);
+//  delay(100);
+//  analogWrite(redPin,1024);
+//  delay(100);
 
   pinMode(greenPin, OUTPUT);
   //digitalWrite(greenPin, LOW);
-  analogWrite(greenPin,512);
-  delay(100);
-  analogWrite(greenPin,1024);
-  delay(100);
+//  analogWrite(greenPin,512);
+//  delay(100);
+//  analogWrite(greenPin,1024);
+//  delay(100);
 
   pinMode(bluePin, OUTPUT);
   //digitalWrite(bluePin, LOW);
-  analogWrite(bluePin,512);
-  delay(100);
-  analogWrite(bluePin,1024);
-  delay(100);
+//  analogWrite(bluePin,512);
+//  delay(100);
+//  analogWrite(bluePin,1024);
+//  delay(100);
 
   /* Parse char */
   //strtol(myChar.substring(4,5).c_str(), NULL, 16);
@@ -159,27 +159,57 @@ void UDPmulticast()
 	if (result == 1) {
 	  //udp.write(WiFi.localIP());
 
-	  IPAddress ipno;
+		IPAddress ipno;
+		String stateLed;
 
-	  if(apState)
-	  {
-		  ipno = WiFi.softAPIP();
-	  }
-	  else
-	  {
-		  ipno = WiFi.localIP();
-	  }
+		if(apState)
+		{
+			ipno = WiFi.softAPIP();
+			stateLed = "NA";
+		}
+		else
+		{
+			ipno = WiFi.localIP();
+			stateLed = led_state;
+		}
 
-	  const char buffer [6] = {ipno[0], ipno[1], ipno[2], ipno[3], (byte)(2807), (byte)(2807 >> 8)};
-	  udp.write(buffer, 6);
+		DynamicJsonBuffer jsonBuffer;
+		JsonObject& json = jsonBuffer.createObject();
+		json["ip_address"] = ipno.toString();
+		json["port_num"] = 2807;
+		json["led_state"] = stateLed;
+
+		String replyMsg;
+
+		json.printTo(replyMsg);
+
+		Serial.println(replyMsg);
+
+		udp.write(replyMsg.c_str());
+
+		udp.endPacket();
+
+	  //const char buffer [6] = {ipno[0], ipno[1], ipno[2], ipno[3], (byte)(2807), (byte)(2807 >> 8)};
+	  //udp.write(buffer, 6);
+
+//	  if(apState)
+//	  {
+//		  udp.write('x');
+//	  }
+//	  else
+//	  {
+//		  udp.write(':');
+//		  udp.write(led_state, 11);
+//	  }
+
 
 	  //String* sentData = new String(buffer);
 
-	  udp.endPacket();
+	  //udp.endPacket();
 
-	  Serial.print("Source: "+ ipno.toString()+" Dest: "+udp.remoteIP().toString());
+	  //Serial.print("Source: "+ ipno.toString()+" Dest: "+udp.remoteIP().toString());
 
-	  Serial.println(" Data: "+ipno.toString()+":"+"2807");
+	  //Serial.println(" Data: "+ipno.toString()+":"+"2807");
 
 	  sentMulticasts++;
 	}

@@ -38,7 +38,7 @@ public class DeviceAdapter extends RecyclerView.Adapter implements DeviceViewHol
 
         DeviceItem item = devices.get(position);
         holder.nameTextView.setText(devices.get(position).getName());
-        holder.typeTextView.setText("RGB bulb");
+        holder.typeTextView.setText(devices.get(position).getType());
         holder.item = item;
     }
 

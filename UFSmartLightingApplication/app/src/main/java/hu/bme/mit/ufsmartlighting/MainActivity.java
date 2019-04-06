@@ -46,7 +46,7 @@ import hu.bme.mit.ufsmartlighting.device.DeviceItem;
 import hu.bme.mit.ufsmartlighting.device.DeviceViewHolder;
 
 public class MainActivity extends AppCompatActivity
-        implements WiFiApDialogFragment.setOnWiFiApSSIDListener, DeviceViewHolder.OnItemChangedListener {
+        implements WiFiApDialogFragment.setOnWiFiApSSIDListener, DeviceViewHolder.OnItemChangedListener, DetailsActivity.OnDeviceStateChangedListener {
 
     final private int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 125;
 
@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity
 
     private String ipAddr;
     private int server_port;
+
+    private String smartLightingState;
 
     private boolean wifiOK = false;
 
@@ -298,7 +300,19 @@ public class MainActivity extends AppCompatActivity
 
                         socket.receive(packet);
 
+                        final String recvMsg = new String(packet.getData(), 0, packet.getLength());
 
+                        System.out.println(recvMsg);
+
+                        JSONObject jsonObj = new JSONObject(recvMsg);
+
+                        ipAddr = jsonObj.getString("ip_address");
+
+                        server_port = jsonObj.getInt("port_num");
+
+                        smartLightingState = jsonObj.getString("led_state");
+
+                        /*
                         ipAddr = "";
 
                         // Java byte values are signed. Convert to an int so we don't have to deal with negative values for bytes >= 0x7f (unsigned).
@@ -325,11 +339,31 @@ public class MainActivity extends AppCompatActivity
 
                         server_port += ((buf[ii] >= 0) ? (int) buf[ii] : (int) buf[ii] + 256) << 8;
 
+                        ii++;
+
                         System.out.println(ipAddr);
 
                         Log.d("MainActivity", ipAddr);
 
                         final String myString = ipAddr + ":" + String.valueOf(server_port);
+
+                        String alreadyConnected = String.valueOf((buf[ii] >= 0) ? (int) buf[ii] : (int) buf[ii] + 256);
+
+                        System.out.println(alreadyConnected);
+
+                        if(alreadyConnected.equals("58")) {
+                            // save led state!
+                            for (; ii < 20; ii++) {
+                                smartLightingState = smartLightingState + String.valueOf((buf[ii] >= 0) ? (int) buf[ii] : (int) buf[ii] + 256);
+                            }
+                        }
+                        else
+                        {
+                            smartLightingState = myString;
+                        }
+
+                        System.out.println(smartLightingState);
+                        */
 
                         // We're running on a worker thread here, but we need to update the list view from the main thread
                         runOnUiThread(new Runnable() {
@@ -338,10 +372,23 @@ public class MainActivity extends AppCompatActivity
 
                                 //pullToRefresh.setRefreshing(false);
 
-                                Toast.makeText(getApplicationContext(), myString, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), recvMsg, Toast.LENGTH_SHORT).show();
                                 //tv.setText(myString);
 
-                                DeviceItem item = new DeviceItem(myString, ipAddr, server_port);
+                                DeviceItem item;
+
+                                if("NA".equals(smartLightingState))
+                                {
+                                    item = new DeviceItem("Smart Bulb", "NA",
+                                                    new Long(0), ipAddr, server_port);
+                                }
+                                else
+                                {
+                                    Long ledValue = Long.valueOf(smartLightingState.substring(4,10), 16);
+
+                                    item = new DeviceItem("Smart Bulb", smartLightingState.substring(0, 3),
+                                                ledValue , ipAddr, server_port);
+                                }
 
                                 adapter.addDevice(item);
 
@@ -369,7 +416,7 @@ public class MainActivity extends AppCompatActivity
                         }
                     });
                 }
-                catch(IOException e) {
+                catch(IOException | JSONException e) {
                     System.out.println(e.toString());
 
                     runOnUiThread(new Runnable() {
@@ -548,6 +595,7 @@ public class MainActivity extends AppCompatActivity
             Intent showDetailsIntent = new Intent();
             showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
+            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_STATE, device.getState());
             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
             startActivity(showDetailsIntent);
@@ -665,6 +713,7 @@ public class MainActivity extends AppCompatActivity
                             Intent showDetailsIntent = new Intent();
                             showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
                             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
+                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_STATE, device.getState());
                             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
                             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
                             startActivity(showDetailsIntent);
@@ -694,5 +743,10 @@ public class MainActivity extends AppCompatActivity
         editor.commit();
 
         Toast.makeText(getApplicationContext(), wifiApSSID, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void OnDeviceStateChanged(Long number) {
+
     }
 }

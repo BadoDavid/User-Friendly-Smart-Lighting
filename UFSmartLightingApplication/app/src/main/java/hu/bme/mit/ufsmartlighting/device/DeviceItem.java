@@ -3,11 +3,15 @@ package hu.bme.mit.ufsmartlighting.device;
 public class DeviceItem
 {
     private String name;
+    private String type;
+    private Long state;
     private String address;
     private Integer port;
 
-    public DeviceItem(String name, String address, Integer port) {
+    public DeviceItem(String name, String type, Long state, String address, Integer port) {
         this.name = name;
+        this.type = type;
+        this.state = state;
         this.address = address;
         this.port = port;
     }
@@ -18,6 +22,22 @@ public class DeviceItem
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Long getState() {
+        return state;
+    }
+
+    public void setState(Long state) {
+        this.state = state;
     }
 
     public String getAddress() {

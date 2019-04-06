@@ -13,12 +13,15 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import hu.bme.mit.ufsmartlighting.device.DeviceItem;
+
 
 public class DetailsActivity extends AppCompatActivity {
 
     private static final String TAG = "DetailsActivity";
 
     public static final String EXTRA_DEVICE_NAME = "extra.device_name";
+    public static final String EXTRA_DEVICE_STATE = "extra.device_state";
     public static final String EXTRA_DEVICE_IPADDR = "extra.device_ipaddr";
     public static final String EXTRA_DEVICE_PORT = "extra.device_port";
 
@@ -26,10 +29,19 @@ public class DetailsActivity extends AppCompatActivity {
     private int greenValue = 0x00;
     private int blueValue = 0x00;
 
+    Long ledValue =  new Long(0);
+
     private String device;
 
     private String ipAddr;
     private int udpPort;
+
+    OnDeviceStateChangedListener listener;
+
+    public interface OnDeviceStateChangedListener {
+
+        void OnDeviceStateChanged(Long number);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +49,27 @@ public class DetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_details);
 
         device = getIntent().getStringExtra(EXTRA_DEVICE_NAME);
+        ledValue = getIntent().getLongExtra(EXTRA_DEVICE_STATE, 0x000000);
         ipAddr = getIntent().getStringExtra(EXTRA_DEVICE_IPADDR);
         udpPort = getIntent().getIntExtra(EXTRA_DEVICE_PORT, -1);
+
+        /* Parse ledValue */
+        redValue = (int) ((ledValue & 0xFF0000) >> 16);
+        greenValue = (int) ((ledValue & 0x00FF00) >> 8);
+        blueValue = (int) (ledValue & 0x0000FF);
 
         getSupportActionBar().setTitle(device);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         SeekBar sbRed = findViewById(R.id.seekBarRed);
+        sbRed.setProgress(redValue);
+
+        SeekBar sbGreen = findViewById(R.id.seekBarGreen);
+        sbGreen.setProgress(greenValue);
+
+        SeekBar sbBlue = findViewById(R.id.seekBarBlue);
+        sbBlue.setProgress(blueValue);
+
 
         sbRed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -60,8 +86,6 @@ public class DetailsActivity extends AppCompatActivity {
                 onDeviceChanged('R', seekBar.getProgress());
             }
         });
-
-        SeekBar sbGreen = findViewById(R.id.seekBarGreen);
 
         sbGreen.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -81,8 +105,6 @@ public class DetailsActivity extends AppCompatActivity {
             }
         });
 
-        SeekBar sbBlue = findViewById(R.id.seekBarBlue);
-
         sbBlue.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -96,6 +118,7 @@ public class DetailsActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 blueValue = seekBar.getProgress();
+                listener.OnDeviceStateChanged(((long)(redValue) << 16) + ((long)(greenValue) << 8) + (long)(blueValue));
                 onDeviceChanged('B', seekBar.getProgress());
             }
         });
@@ -167,6 +190,8 @@ public class DetailsActivity extends AppCompatActivity {
     }
 
     public void onDeviceChanged(final char color, final int number) {
+
+        // TODO: to be continued...listener.OnDeviceStateChanged(((long)(redValue) << 16) + ((long)(greenValue) << 8) + (long)(blueValue));
 
         new Thread() {
             public void run() {
