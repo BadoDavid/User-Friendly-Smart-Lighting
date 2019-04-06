@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">User Friendly Smart Lighting Application</string>
+    <string name="action_settings">Find WiFiAps (for testing)</string>
+    <string name="reset">Reset</string>
+    <string name="yes">Yes!</string>
+    <string name="cancel">Cancel</string>
+    <string name="saved_wifi_ssid">hu.bme.mit.ufsmartlighting.ssid</string>
+    <string name="saved_wifi_password">hu.bme.mit.ufsmartlighting.password</string>
+    <string name="action_whoamI">WhoAmI?</string>
+</resources>
