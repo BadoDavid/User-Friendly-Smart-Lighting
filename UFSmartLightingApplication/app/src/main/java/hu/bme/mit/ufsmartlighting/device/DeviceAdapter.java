@@ -4,8 +4,6 @@ import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 import android.support.v7.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -13,20 +11,16 @@ import java.util.List;
 
 import hu.bme.mit.ufsmartlighting.R;
 
-public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceViewHolder> {
+public class DeviceAdapter extends RecyclerView.Adapter implements DeviceViewHolder.OnItemChangedListener {
 
-    private final List<String> devices;
+    private final List<DeviceItem> devices;
 
-    private OnDeviceSelectedListener listener;
+    //DeviceViewHolder.OnItemChangedListener dvhListener;
 
-    public interface OnDeviceSelectedListener {
-        void onDeviceSelected(final String city);
+    private DeviceViewHolder.OnItemChangedListener dvhListener;
 
-        void onDeviceDeleted(String item);
-    }
-
-    public DeviceAdapter(OnDeviceSelectedListener listener) {
-        this.listener = listener;
+    public DeviceAdapter(DeviceViewHolder.OnItemChangedListener listener) {
+        this.dvhListener = listener;
         devices = new ArrayList<>();
     }
 
@@ -34,13 +28,17 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
     @Override
     public DeviceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_device, parent, false);
-        return new DeviceViewHolder(view);
+        return new DeviceViewHolder(view, this);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull DeviceViewHolder holder, int position) {
-        String item = devices.get(position);
-        holder.nameTextView.setText(devices.get(position));
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
+
+        DeviceViewHolder holder = (DeviceViewHolder) viewHolder;
+
+        DeviceItem item = devices.get(position);
+        holder.nameTextView.setText(devices.get(position).getName());
+        holder.typeTextView.setText("RGB bulb");
         holder.item = item;
     }
 
@@ -49,7 +47,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
         return devices.size();
     }
 
-    public void addDevice(String newDevice) {
+    public void addDevice(DeviceItem newDevice) {
         if (!devices.contains(newDevice)) {
             devices.add(newDevice);
             notifyItemInserted(devices.size() - 1);
@@ -65,38 +63,16 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
         }
     }
 
-    class DeviceViewHolder extends RecyclerView.ViewHolder {
+    @Override
+    public void onDeviceSelected(DeviceItem item) {
+        dvhListener.onDeviceSelected(item);
+    }
 
-        TextView nameTextView;
+    @Override
+    public void onDeviceDeleted(DeviceItem item) {
 
-        Button resetButton;
+        dvhListener.onDeviceDeleted(item);
 
-        String item;
-
-        DeviceViewHolder(View itemView) {
-            super(itemView);
-
-            nameTextView = itemView.findViewById(R.id.DeviceItemNameTextView);
-            resetButton = itemView.findViewById(R.id.DeviceItemResetButton);
-
-            resetButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (listener != null) {
-                        listener.onDeviceDeleted(item);
-                    }                    
-                    removeDevice(devices.indexOf(item));
-                }
-            });
-
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (listener != null) {
-                        listener.onDeviceSelected(item);
-                    }
-                }
-            });
-        }
+        removeDevice(devices.indexOf(item));
     }
 }

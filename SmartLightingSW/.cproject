@@ -19,18 +19,6 @@
 							<builder buildPath="${workspace_loc:/SmartLight}/Release" id="io.sloeber.sketch.builder.1686263864" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Arduino sketch builder" superClass="io.sloeber.sketch.builder"/>
 							<tool id="io.sloeber.tool.sketch.compiler.cpp.2056407170" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.cpp.sketch.option.incpath.289137029" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/core/core}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/core/variant}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ArduinoJson/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/DNSServer/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/EEPROM}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/esp8266/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ESP8266HTTPClient/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ESP8266WebServer/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ESP8266WiFi/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/Ticker}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/WiFiManager}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/Wire}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/ArduinoJson/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/DNSServer/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/EEPROM}&quot;"/>
@@ -41,23 +29,13 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/Ticker}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/WiFiManager}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/Wire}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/core/variant}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.974920179" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
 							<tool id="io.sloeber.tool.compiler.c.1709291864" name="Arduino C Compiler" superClass="io.sloeber.tool.compiler.c">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.c.sketch.option.incpath.1101830160" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/core/core}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/core/variant}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ArduinoJson/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/DNSServer/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/EEPROM}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/esp8266/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ESP8266HTTPClient/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ESP8266WebServer/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ESP8266WiFi/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/Ticker}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/WiFiManager}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/Wire}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/ArduinoJson/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/DNSServer/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/EEPROM}&quot;"/>
@@ -68,23 +46,13 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/Ticker}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/WiFiManager}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/Wire}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/core/variant}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.525445521" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
 							<tool id="io.sloeber.tool.sketch.compiler.s.214511509" name="Arduino Assembler" superClass="io.sloeber.tool.sketch.compiler.s">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.asm.sketch.option.incpath.459081277" name="Include Paths (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/core/core}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/core/variant}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ArduinoJson/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/DNSServer/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/EEPROM}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/esp8266/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ESP8266HTTPClient/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ESP8266WebServer/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/ESP8266WiFi/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/Ticker}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/WiFiManager}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLight/libraries/Wire}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/ArduinoJson/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/DNSServer/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/EEPROM}&quot;"/>
@@ -95,6 +63,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/Ticker}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/WiFiManager}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/libraries/Wire}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SmartLightingSW/core/variant}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.1248304803" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>
@@ -201,5 +171,12 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="esp8266">
+			<resource resourceType="PROJECT" workspacePath="/SmartLightingSW"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/SmartLightingSW"/>
+		</configuration>
+	</storageModule>
 </cproject>

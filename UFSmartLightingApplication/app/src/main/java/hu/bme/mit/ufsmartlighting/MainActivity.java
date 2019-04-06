@@ -42,9 +42,11 @@ import java.util.List;
 import java.util.Map;
 
 import hu.bme.mit.ufsmartlighting.device.DeviceAdapter;
+import hu.bme.mit.ufsmartlighting.device.DeviceItem;
+import hu.bme.mit.ufsmartlighting.device.DeviceViewHolder;
 
 public class MainActivity extends AppCompatActivity
-        implements DeviceAdapter.OnDeviceSelectedListener, WiFiApDialogFragment.setOnWiFiApSSIDListener{
+        implements WiFiApDialogFragment.setOnWiFiApSSIDListener, DeviceViewHolder.OnItemChangedListener {
 
     final private int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 125;
 
@@ -255,9 +257,10 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * Receiving UDP Multicast messages = save the device IP address and port number
-     * TODO: HOw it works in case more devices?
      */
     private void handleMulticastMsg() {
+
+        final List<String> messages = new ArrayList<>();
 
         new Thread() {
             public void run() {
@@ -333,18 +336,38 @@ public class MainActivity extends AppCompatActivity
                             @Override
                             public void run() {
 
-                                pullToRefresh.setRefreshing(false);
+                                //pullToRefresh.setRefreshing(false);
 
                                 Toast.makeText(getApplicationContext(), myString, Toast.LENGTH_SHORT).show();
                                 //tv.setText(myString);
-                                adapter.addDevice(myString);
+
+                                DeviceItem item = new DeviceItem(myString, ipAddr, server_port);
+
+                                adapter.addDevice(item);
 
                                 adapter.notifyDataSetChanged();
                             }
                         });
 
-                        break;
+                        // TODO: Needed a sopisticated solution like count addDevice errors
+                        if(messages.contains(ipAddr))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            messages.add(ipAddr);
+                        }
+                        //break;
                     }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            pullToRefresh.setRefreshing(false);
+                        }
+                    });
                 }
                 catch(IOException e) {
                     System.out.println(e.toString());
@@ -518,15 +541,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onDeviceSelected(final String device) {
+    public void onDeviceSelected(final DeviceItem device) {
 
         if(wifi.getConnectionInfo().getSSID().contains(wifiSSID)){
 //        if(networkFine) {
             Intent showDetailsIntent = new Intent();
             showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
-            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device);
-            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, ipAddr);
-            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, server_port);
+            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
+            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
+            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
             startActivity(showDetailsIntent);
         }
         else
@@ -641,9 +664,9 @@ public class MainActivity extends AppCompatActivity
                         public void onClick(DialogInterface dialog, int id) {
                             Intent showDetailsIntent = new Intent();
                             showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
-                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device);
-                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, ipAddr);
-                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, server_port);
+                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
+                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
+                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
                             startActivity(showDetailsIntent);
                         }
                     });
@@ -652,8 +675,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onDeviceDeleted(String item) {
-        wifi.startScan();
+    public void onDeviceDeleted(DeviceItem item) {
+
+        // If device deleted start multicast handling
+        handleMulticastMsg();
     }
 
     @Override

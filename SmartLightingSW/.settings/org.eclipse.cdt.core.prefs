@@ -912,10 +912,10 @@ environment/project/io.sloeber.core.toolChain.release.1675964497/A.SERIAL.DISABL
 environment/project/io.sloeber.core.toolChain.release.1675964497/A.SERIAL.DISABLERTS/value=true
 environment/project/io.sloeber.core.toolChain.release.1675964497/A.SERIAL.PORT.FILE/delimiter=;
 environment/project/io.sloeber.core.toolChain.release.1675964497/A.SERIAL.PORT.FILE/operation=replace
-environment/project/io.sloeber.core.toolChain.release.1675964497/A.SERIAL.PORT.FILE/value=COM15
+environment/project/io.sloeber.core.toolChain.release.1675964497/A.SERIAL.PORT.FILE/value=${A.SERIAL.PORT}
 environment/project/io.sloeber.core.toolChain.release.1675964497/A.SERIAL.PORT/delimiter=;
 environment/project/io.sloeber.core.toolChain.release.1675964497/A.SERIAL.PORT/operation=replace
-environment/project/io.sloeber.core.toolChain.release.1675964497/A.SERIAL.PORT/value=COM15
+environment/project/io.sloeber.core.toolChain.release.1675964497/A.SERIAL.PORT/value=${JANTJE.COM_PORT}
 environment/project/io.sloeber.core.toolChain.release.1675964497/A.SOFTWARE/delimiter=;
 environment/project/io.sloeber.core.toolChain.release.1675964497/A.SOFTWARE/operation=replace
 environment/project/io.sloeber.core.toolChain.release.1675964497/A.SOFTWARE/value=ARDUINO
@@ -1008,7 +1008,7 @@ environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.BOARD_NA
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.BOARD_NAME/value=LOLIN(WEMOS) D1 R2 & mini
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.COM_PORT/delimiter=;
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.COM_PORT/operation=replace
-environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.COM_PORT/value=COM15
+environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.COM_PORT/value=COM17
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.ECLIPSE_LOCATION/delimiter=;
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.ECLIPSE_LOCATION/operation=replace
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.ECLIPSE_LOCATION/value=E\:\\eclipse\\
@@ -1050,7 +1050,7 @@ environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.PACKAGE_
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.PACKAGE_ID/value=esp8266
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.PROJECT_NAME/delimiter=;
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.PROJECT_NAME/operation=replace
-environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.PROJECT_NAME/value=SmartLight
+environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.PROJECT_NAME/value=SmartLightingSW
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.SELECTED.PLATFORM/delimiter=;
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.SELECTED.PLATFORM/operation=replace
 environment/project/io.sloeber.core.toolChain.release.1675964497/JANTJE.SELECTED.PLATFORM/value=${eclipse_home}/arduinoPlugin/packages/esp8266/hardware/esp8266/2.4.2

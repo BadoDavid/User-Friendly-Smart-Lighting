@@ -1,2 +1,2 @@
 spec.o: \
- E:/David/eclipseWS/.metadata/.plugins/org.eclipse.cdt.managedbuilder.core/spec.c
+ C:/Users/Badbeloved/Documents/BME_MSc/wsEclipseSmartLighting/.metadata/.plugins/org.eclipse.cdt.managedbuilder.core/spec.c
