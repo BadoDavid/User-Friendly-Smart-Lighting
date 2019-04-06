@@ -118,7 +118,6 @@ public class DetailsActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 blueValue = seekBar.getProgress();
-                listener.OnDeviceStateChanged(((long)(redValue) << 16) + ((long)(greenValue) << 8) + (long)(blueValue));
                 onDeviceChanged('B', seekBar.getProgress());
             }
         });
