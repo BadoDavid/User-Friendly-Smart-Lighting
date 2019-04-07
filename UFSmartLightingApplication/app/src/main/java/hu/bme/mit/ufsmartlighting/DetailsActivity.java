@@ -1,5 +1,6 @@
 package hu.bme.mit.ufsmartlighting;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
@@ -13,6 +14,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import hu.bme.mit.ufsmartlighting.device.DeviceAdapter;
 import hu.bme.mit.ufsmartlighting.device.DeviceItem;
 
 
@@ -20,6 +22,7 @@ public class DetailsActivity extends AppCompatActivity {
 
     private static final String TAG = "DetailsActivity";
 
+    public static final String EXTRA_DEVICE_POSITION = "extra.device_position";
     public static final String EXTRA_DEVICE_NAME = "extra.device_name";
     public static final String EXTRA_DEVICE_STATE = "extra.device_state";
     public static final String EXTRA_DEVICE_IPADDR = "extra.device_ipaddr";
@@ -33,6 +36,8 @@ public class DetailsActivity extends AppCompatActivity {
 
     private String device;
 
+    private int itemPos;
+
     private String ipAddr;
     private int udpPort;
 
@@ -40,7 +45,7 @@ public class DetailsActivity extends AppCompatActivity {
 
     public interface OnDeviceStateChangedListener {
 
-        void OnDeviceStateChanged(Long number);
+        void OnDeviceStateChanged(int pos, Long number);
     }
 
     @Override
@@ -48,6 +53,7 @@ public class DetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
 
+        itemPos = getIntent().getIntExtra(EXTRA_DEVICE_POSITION, -1);
         device = getIntent().getStringExtra(EXTRA_DEVICE_NAME);
         ledValue = getIntent().getLongExtra(EXTRA_DEVICE_STATE, 0x000000);
         ipAddr = getIntent().getStringExtra(EXTRA_DEVICE_IPADDR);
@@ -190,7 +196,15 @@ public class DetailsActivity extends AppCompatActivity {
 
     public void onDeviceChanged(final char color, final int number) {
 
-        // TODO: to be continued...listener.OnDeviceStateChanged(((long)(redValue) << 16) + ((long)(greenValue) << 8) + (long)(blueValue));
+        ledValue = ((long)(redValue) << 16) | ((long)(greenValue) << 8) | (long)(blueValue);
+
+        //Intent intent = new Intent();
+        //intent.putExtra(EXTRA_DEVICE_POSITION, itemPos);
+        //intent.putExtra(EXTRA_DEVICE_STATE, ledValue);
+        //setResult(MainActivity.DEVICE_STATE_REQUEST, intent);
+        //finish();//finishing activity
+        //listener.OnDeviceStateChanged( itemPos,ledValue);
+        MainActivity.OnDeviceStateChanged(itemPos, ledValue);
 
         new Thread() {
             public void run() {

@@ -54,6 +54,29 @@ public class DeviceAdapter extends RecyclerView.Adapter implements DeviceViewHol
         }
     }
 
+    public DeviceItem getDevice (int position)
+    {
+        return devices.get(position);
+    }
+
+    public int getDevicePosition(DeviceItem item)
+    {
+        return devices.indexOf(item);
+    }
+
+    public void updateDeviceState(int position, Long state) {
+
+        devices.get(position).setState(state);
+
+        notifyItemChanged(position);
+
+        /*
+        if (position < devices.size()) {
+            notifyItemRangeChanged(position, devices.size() - position);
+        }
+        */
+    }
+
     public void removeDevice(int position) {
         devices.remove(position);
         notifyItemRemoved(position);

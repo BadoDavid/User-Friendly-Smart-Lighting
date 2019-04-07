@@ -46,16 +46,18 @@ import hu.bme.mit.ufsmartlighting.device.DeviceItem;
 import hu.bme.mit.ufsmartlighting.device.DeviceViewHolder;
 
 public class MainActivity extends AppCompatActivity
-        implements WiFiApDialogFragment.setOnWiFiApSSIDListener, DeviceViewHolder.OnItemChangedListener, DetailsActivity.OnDeviceStateChangedListener {
+        implements WiFiApDialogFragment.setOnWiFiApSSIDListener, DeviceViewHolder.OnItemChangedListener {
 
     final private int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 125;
+
+    static final int DEVICE_STATE_REQUEST = 1;
 
     TextView tv;
 
     private boolean networkFine = false;
 
     private RecyclerView recyclerView;
-    private DeviceAdapter adapter;
+    private static DeviceAdapter adapter;
 
     private SwipeRefreshLayout pullToRefresh;
 
@@ -379,14 +381,14 @@ public class MainActivity extends AppCompatActivity
 
                                 if("NA".equals(smartLightingState))
                                 {
-                                    item = new DeviceItem("Smart Bulb", "NA",
+                                    item = new DeviceItem("SmartBulb:".concat(ipAddr), "NA",
                                                     new Long(0), ipAddr, server_port);
                                 }
                                 else
                                 {
                                     Long ledValue = Long.valueOf(smartLightingState.substring(4,10), 16);
 
-                                    item = new DeviceItem("Smart Bulb", smartLightingState.substring(0, 3),
+                                    item = new DeviceItem("SmartBulb:".concat(ipAddr), smartLightingState.substring(0, 3),
                                                 ledValue , ipAddr, server_port);
                                 }
 
@@ -590,15 +592,19 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onDeviceSelected(final DeviceItem device) {
 
+        final int devPos = adapter.getDevicePosition(device);
+
         if(wifi.getConnectionInfo().getSSID().contains(wifiSSID)){
 //        if(networkFine) {
             Intent showDetailsIntent = new Intent();
             showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
+            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_STATE, device.getState());
             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
             startActivity(showDetailsIntent);
+            //startActivityForResult(showDetailsIntent, DEVICE_STATE_REQUEST);
         }
         else
         {
@@ -712,11 +718,13 @@ public class MainActivity extends AppCompatActivity
                         public void onClick(DialogInterface dialog, int id) {
                             Intent showDetailsIntent = new Intent();
                             showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
+                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
                             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
                             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_STATE, device.getState());
                             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
                             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
                             startActivity(showDetailsIntent);
+                            //startActivityForResult(showDetailsIntent, DEVICE_STATE_REQUEST);
                         }
                     });
             builder.create().show();
@@ -745,8 +753,31 @@ public class MainActivity extends AppCompatActivity
         Toast.makeText(getApplicationContext(), wifiApSSID, Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    public void OnDeviceStateChanged(Long number) {
 
+    /*
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        // Check which request we're responding to
+        if (requestCode == DEVICE_STATE_REQUEST) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+
+                int pos = data.getIntExtra(DetailsActivity.EXTRA_DEVICE_POSITION, -1);
+                Long state = data.getLongExtra(DetailsActivity.EXTRA_DEVICE_STATE, new Long(0));
+
+                if(-1 != pos)
+                {
+                    adapter.updateDeviceState(pos, state);
+                }
+            }
+        }
     }
+    */
+
+    public static void OnDeviceStateChanged(int pos, Long number) {
+        adapter.updateDeviceState(pos, number);
+    }
+
 }

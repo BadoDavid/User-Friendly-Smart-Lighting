@@ -9,6 +9,7 @@ public class DeviceItem
     private Integer port;
 
     public DeviceItem(String name, String type, Long state, String address, Integer port) {
+
         this.name = name;
         this.type = type;
         this.state = state;
