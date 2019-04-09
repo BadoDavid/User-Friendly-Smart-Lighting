@@ -207,7 +207,7 @@ void UDPmulticast()
 
 	  //udp.endPacket();
 
-	  //Serial.print("Source: "+ ipno.toString()+" Dest: "+udp.remoteIP().toString());
+	  Serial.println("Source: "+ ipno.toString()+" Gateway: "+WiFi.gatewayIP().toString());
 
 	  //Serial.println(" Data: "+ipno.toString()+":"+"2807");
 

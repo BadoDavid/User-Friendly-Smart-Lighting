@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity
                     socket = new MulticastSocket(7235);
                     socket.setNetworkInterface(byInetAddress);
                     socket.joinGroup(InetAddress.getByName("224.1.1.1"));
-                    socket.setSoTimeout(5000);
+                    socket.setSoTimeout(10000);
                     socket.setTimeToLive(20);
 
                     //group = InetAddress.getByName("224.1.1.1");
@@ -512,6 +512,8 @@ public class MainActivity extends AppCompatActivity
         WiFiApDialogFragment wifiApFragment = new WiFiApDialogFragment();
 
         wifiApFragment.setOnWiFiApSSIDListener(this);
+
+        //wifiApFragment.setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_AppCompat_Light_Dialog);
 
         wifiApFragment.setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
 

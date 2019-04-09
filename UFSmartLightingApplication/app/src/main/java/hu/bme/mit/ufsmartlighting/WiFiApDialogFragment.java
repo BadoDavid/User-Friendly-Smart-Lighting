@@ -69,7 +69,7 @@ public class WiFiApDialogFragment extends AppCompatDialogFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        getDialog().setTitle("Available WiFi Access Points");
+        getDialog().setTitle("WiFi Access Points");
 
         View rootView=inflater.inflate(R.layout.fraglayout,container);
 
@@ -164,6 +164,13 @@ public class WiFiApDialogFragment extends AppCompatDialogFragment
     {
         List<ScanResult> scanResultList = wifi.getScanResults();
         List<WifiItem> selectableItems = new ArrayList<>();
+
+        /* for testing
+        selectableItems.add(new WifiItem("1"));
+        selectableItems.add(new WifiItem("2"));
+        selectableItems.add(new WifiItem("3"));
+        selectableItems.add(new WifiItem("4"));
+        */
 
         for (ScanResult scanResults : scanResultList)
         {
