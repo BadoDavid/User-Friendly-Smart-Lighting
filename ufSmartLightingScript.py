@@ -11,13 +11,13 @@ def make_rule_RGB_item(item):
     rule +="when \n\t"
     rule +="Item c"+item+" received command \n"
     rule +="then \n\t"
-    rule +="if (receivedCommand instanceof HSBType) \n{\n\t\t"
+    rule +="if (receivedCommand instanceof HSBType) \n\t{\n\t\t"
     rule +="val red = (receivedCommand as HSBType).red * 2.55 \n\t\t"
     rule +="val green = (receivedCommand as HSBType).green * 2.55 \n\t\t"
     rule +="val blue = (receivedCommand as HSBType).blue * 2.55 \n\t\t"
     rule +="\n\t\t"
     rule +='s'+item+'.sendCommand'
-    rule +='(" {\"type\":\"Controll\",\"red\":"+red.intValue.toString+",\"green\":"+green.intValue.toString+",\"blue\":"+blue.intValue.toString+"} ")'
+    rule +='(" {\\"type\\":\\"Controll\\",\\"red\\":"+red.intValue.toString+",\\"green\\":"+green.intValue.toString+",\\"blue\\":"+blue.intValue.toString+"} ")'
     rule +="\n\t}\n"
     rule +='end\n\n'
     return rule
@@ -36,7 +36,7 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 #sock.bind((MCAST_GRP, MCAST_PORT))
 sock.bind(('', MCAST_PORT))
-mreq = struct.pack("4sL", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
+mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
 
 intf = socket.gethostbyname(socket.gethostname())
 sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
@@ -44,26 +44,26 @@ sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 #sock.settimeout(10)
 
 ipAddrs = []
+smItems = []
 
 cntr = 0
 
 # TODO: move to the appropriate places
-items = open(".\conf\items\default.items", "w")
-sitemap = open(".\conf\sitemaps\default.sitemap", "w")
-rules = open(".\conf\\rules\default.rules", "w")
+items = open("./conf/items/default.items", "w")
+#sitemap = open(".\conf\sitemaps\default.sitemap", "w")
+rules = open("./conf//rules/default.rules", "w")
 
-sitemap.write("sitemap default label=\"My first sitemap\" \n")
-sitemap.flush()
-os.fsync(sitemap.fileno())
+#sitemap.write("sitemap default label=\"My first sitemap\" \n")
+#sitemap.flush()
+#os.fsync(sitemap.fileno())
 
 print("Hello! Multicast msg receiving...")
 
-while True:
-    data = sock.recvfrom(128)
+cntr = 0
 
-    print("Received something...")
- 
-#print(type(data));
+while True:
+    data = sock.recvfrom(1024)
+    #print("Received something...")
     print(data[0])
 
     json_obj = json.loads(data[0])
@@ -76,24 +76,35 @@ while True:
     if(nextIpAddr not in ipAddrs):
         ipAddrs.append(nextIpAddr)
 
+        cntr += 1
+
         #TODO: use valid name!!!
-        name = "RGB_Blub"
+        name = "Bulb"+str(cntr)
 
         # fill items file
         #String Switch_A1 "SwitchA1" (bbsb) { udp=">[192.168.2.101:2807:]" }
-        items.write("String s"+name+" \"Bado_Bulb\" { udp=\">[");
+        items.write("String s"+name+" \"sItem"+name+"\" { udp=\">[");
         items.write(nextIpAddr+":"+str(nextPortNum))
         items.write(":]\" } \n")
         #Color LR_LEDLight_Color "LR_LEDLight_Color"
-        items.write("Color c"+name+" \"LR_LEDLight_Color\"")
+        items.write("Color c"+name+" \"cItem"+name+"\"\n")
         items.flush()
         os.fsync(items.fileno())
 
         # fill sitemap file
-        sitemap.write("{ \n\tColorpicker item=c"+name)
-        sitemap.write(" label=\"LED RGB Color\" icon=\"light\" \n}")
-        sitemap.flush()
-        os.fsync(sitemap.fileno())
+        smString = "\n\t\tColorpicker item=c"+name+" label=\""+name+"\" icon=\"light\""
+        smItems.append(smString)
+        
+        sitemap = open("./conf/sitemaps/default.sitemap", "w")
+        sitemap.write("sitemap default label=\"My first sitemap\" \n")
+        sitemap.write("{")
+        sitemap.write("\n\tFrame label=\"SmartLights\" { ")
+        for smItem in smItems:
+            sitemap.write(smItem)
+        sitemap.write("\n\t}\n}")
+        sitemap.close()
+        #sitemap.flush()
+        #os.fsync(sitemap.fileno())
 
         # fill rules file
         rules.write(make_rule_RGB_item(name))
@@ -112,5 +123,5 @@ while True:
     #print(json_obj ['led_state'])
 
 items.close()
-sitemap.close()
+#sitemap.close()
 rules.close()
