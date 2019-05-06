@@ -78,6 +78,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
  */
 void connectWifi(char ssid[], char password[])
 {
+	//TODO: need to change behaviour...timeout of the connection need to be changed
     int i = 0;
 
     if(apState)
@@ -98,11 +99,23 @@ void connectWifi(char ssid[], char password[])
     	Serial.print(WiFi.SSID());
     }
 
+    /*
     Serial.print(":");
 
     Serial.println(password);
 
+    if((strcmp(ssid, "") == 0) || (strcmp(password, "") == 0))
+    {
+        WiFi.begin();
+    }
+    else
+    {
+        WiFi.begin(ssid, password);
+    }
+    */
+
     WiFi.begin(ssid, password);
+
     while (WiFi.status() != WL_CONNECTED) {
       i++;
       delay(500);

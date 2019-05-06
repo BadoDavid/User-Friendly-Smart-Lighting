@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
@@ -26,6 +27,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.flask.colorpicker.ColorPickerView;
+import com.flask.colorpicker.OnColorChangedListener;
+import com.flask.colorpicker.OnColorSelectedListener;
+import com.flask.colorpicker.builder.ColorPickerClickListener;
+import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -149,6 +156,8 @@ public class MainActivity extends AppCompatActivity
                                 wifi.reconnect();
                                 wifiOK = true;
 
+                                adapter.deleteAll();
+
                                 break;
                             }
                         }
@@ -236,7 +245,15 @@ public class MainActivity extends AppCompatActivity
             checkandAskPermission();
         }
 
-        wifi.startScan();
+        //wifi.startScan();
+
+        Intent i = new Intent(MainActivity.this, APDiscoveryService.class);
+        i.putExtra(APDiscoveryService.EXTRA_SSID, wifiSSID);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            startForegroundService(i);
+        } else {
+            startService(i);
+        }
 
         pullToRefresh = findViewById(R.id.pullToRefresh);
         pullToRefresh.setColorSchemeResources(R.color.colorPrimary, R.color.colorPrimaryDark, R.color.colorAccent);
@@ -497,7 +514,11 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, mySSID+"::"+myPass, Toast.LENGTH_SHORT)
                     .show();
 
-            wifi.startScan();
+            //wifi.startScan();
+
+            // TODO: delete!!
+            Intent i = new Intent(MainActivity.this, APDiscoveryService.class);
+            stopService(i);
 
             return true;
         }
@@ -597,7 +618,48 @@ public class MainActivity extends AppCompatActivity
         final int devPos = adapter.getDevicePosition(device);
 
         if(wifi.getConnectionInfo().getSSID().contains(wifiSSID)){
+
+            Long ledValue = device.getState();
+
+            int redValue = (int) ((ledValue & 0xFF0000) >> 16);
+            int greenValue = (int) ((ledValue & 0x00FF00) >> 8);
+            int blueValue = (int) (ledValue & 0x0000FF);
+
+            //Toast.makeText(getApplicationContext(), device.getState().toString(), Toast.LENGTH_LONG).show();
+
+            ColorPickerDialogBuilder
+                    .with(this)
+                    .setTitle("Choose color")
+                    .initialColor(Color.rgb(redValue, greenValue, blueValue))
+                    .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
+                    .lightnessSliderOnly()
+                    .density(10)
+                    .setOnColorSelectedListener(new OnColorSelectedListener() {
+                        @Override
+                        public void onColorSelected(int selectedColor) {
+                            //toast("onColorSelected: 0x" + Integer.toHexString(selectedColor));
+                            Toast.makeText(getApplicationContext(),
+                                    "onColorSelected: 0x" + Integer.toHexString(selectedColor), Toast.LENGTH_LONG).show();
+
+                            onDeviceChanged(device, selectedColor & 0x00FFFFFF);
+                        }
+                    })
+                    .setPositiveButton("ok", new ColorPickerClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                            //changeBackgroundColor(selectedColor);
+                        }
+                    })
+                    .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    })
+                    .build()
+                    .show();
+
 //        if(networkFine) {
+            /*
             Intent showDetailsIntent = new Intent();
             showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
@@ -606,11 +668,12 @@ public class MainActivity extends AppCompatActivity
             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
             startActivity(showDetailsIntent);
+            */
             //startActivityForResult(showDetailsIntent, DEVICE_STATE_REQUEST);
         }
         else
         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("Do you want to connect your own network? ")
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
@@ -702,7 +765,16 @@ public class MainActivity extends AppCompatActivity
                                                 wifi.reconnect();
                                                 //wifiOK = true;
 
-                                                wifi.startScan();
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+
+                                                        adapter.deleteAll();
+                                                    }
+                                                });
+
+
+                                                //wifi.startScan(); fixme
 
                                                 //handleMulticastMsg();
                                                 break;
@@ -718,6 +790,52 @@ public class MainActivity extends AppCompatActivity
                     })
                     .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
+
+                            Long ledValue = device.getState();
+
+                            int redValue = (int) ((ledValue & 0xFF0000) >> 16);
+                            int greenValue = (int) ((ledValue & 0x00FF00) >> 8);
+                            int blueValue = (int) (ledValue & 0x0000FF);
+
+                            //Toast.makeText(getApplicationContext(), device.getState().toString(), Toast.LENGTH_LONG).show();
+
+                            ColorPickerDialogBuilder
+                                    .with(builder.getContext())
+                                    .setTitle("Choose color")
+                                    .initialColor(Color.WHITE)
+                                    .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
+                                    .lightnessSliderOnly()
+                                    .density(10)
+                                    .setOnColorChangedListener(new OnColorChangedListener() {
+                                        @Override
+                                        public void onColorChanged(int selectedColor) {
+                                            Toast.makeText(getApplicationContext(),
+                                                    "onColorSelected: 0x" + Integer.toHexString(selectedColor), Toast.LENGTH_LONG).show();
+
+                                            onDeviceChanged(device, selectedColor & 0x00FFFFFF);
+                                        }
+                                    })
+                                    .setOnColorSelectedListener(new OnColorSelectedListener() {
+                                        @Override
+                                        public void onColorSelected(int selectedColor) {
+                                            //toast("onColorSelected: 0x" + Integer.toHexString(selectedColor));
+                                        }
+                                    })
+                                    .setPositiveButton("ok", new ColorPickerClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                                            //changeBackgroundColor(selectedColor);
+                                        }
+                                    })
+                                    .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                        }
+                                    })
+                                    .build()
+                                    .show();
+
+                            /*
                             Intent showDetailsIntent = new Intent();
                             showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
                             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
@@ -726,6 +844,8 @@ public class MainActivity extends AppCompatActivity
                             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
                             showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
                             startActivity(showDetailsIntent);
+                            */
+
                             //startActivityForResult(showDetailsIntent, DEVICE_STATE_REQUEST);
                         }
                     });
@@ -780,6 +900,70 @@ public class MainActivity extends AppCompatActivity
 
     public static void OnDeviceStateChanged(int pos, Long number) {
         adapter.updateDeviceState(pos, number);
+    }
+
+    public void onDeviceChanged(final DeviceItem device, final int ledValue) {
+
+        final int pos = adapter.getDevicePosition(device);
+
+        final int redValue = (int) ((ledValue & 0xFF0000) >> 16);
+        final int greenValue = (int) ((ledValue & 0x00FF00) >> 8);
+        final int blueValue = (int) (ledValue & 0x0000FF);
+
+        //ledValue = ((long)(redValue) << 16) | ((long)(greenValue) << 8) | (long)(blueValue);
+
+        //Intent intent = new Intent();
+        //intent.putExtra(EXTRA_DEVICE_POSITION, itemPos);
+        //intent.putExtra(EXTRA_DEVICE_STATE, ledValue);
+        //setResult(MainActivity.DEVICE_STATE_REQUEST, intent);
+        //finish();//finishing activity
+        //listener.OnDeviceStateChanged( itemPos,ledValue);
+
+        adapter.updateDeviceState(pos, (long) ledValue);
+
+        //MainActivity.OnDeviceStateChanged(itemPos, ledValue);
+
+        new Thread() {
+            public void run() {
+
+                DatagramSocket udpSocket = null;
+                InetAddress local = null;
+
+                try
+                {
+                    //String messageStr = color + String.valueOf(number);
+
+                    udpSocket = new DatagramSocket();
+                    local = InetAddress.getByName(ipAddr);
+
+                    JSONObject object = new JSONObject();
+
+                    object.put("type", "Controll");
+                    object.put("red", redValue);
+                    object.put("green", greenValue);
+                    object.put("blue", blueValue);
+
+                    System.out.print(object.toString());
+
+                    String stringMsg =  object.toString();
+
+                    byte[] msg = stringMsg.getBytes();
+
+                    System.out.println(msg.length);
+
+                    //DatagramPacket p = new DatagramPacket(message, message.length,local,udpPort);
+
+                    DatagramPacket p = new DatagramPacket(msg, msg.length, local, device.getPort());
+
+                    udpSocket.send(p);
+                }
+                catch(IOException e) {
+                    System.out.println(e.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
 }

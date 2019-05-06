@@ -77,6 +77,13 @@ public class DeviceAdapter extends RecyclerView.Adapter implements DeviceViewHol
         */
     }
 
+    public void deleteAll()
+    {
+        devices.clear();
+
+        notifyDataSetChanged();
+    }
+
     public void removeDevice(int position) {
         devices.remove(position);
         notifyItemRemoved(position);

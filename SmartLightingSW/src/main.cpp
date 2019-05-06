@@ -153,7 +153,7 @@ void setup() {
 
 	disconnectedEventHandler = WiFi.onStationModeDisconnected([](const WiFiEventStationModeDisconnected& event)
 	{
-		if (WiFi.status() == WL_DISCONNECTED)
+		if ((apState == false) && (WiFi.status() == WL_DISCONNECTED))
 		{
 			Serial.println("WiFi disconnected");
 
@@ -162,6 +162,13 @@ void setup() {
 			{
 				tickerMulticast.detach();
 			}
+
+			/*
+			if(NULL == myPassword)
+			{
+				Serial.println("NULL POINTER");
+			}
+			*/
 
 			connectWifi(mySSID, myPassword);
 
