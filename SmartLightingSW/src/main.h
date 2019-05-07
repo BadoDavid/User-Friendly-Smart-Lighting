@@ -19,8 +19,8 @@
 
 //end of add your includes here
 
-#define RGB_LED			true
-#define POWER_LED		false
+#define RGB_LED			false
+#define POWER_LED		true
 
 extern int redPin;
 extern int greenPin;
@@ -40,7 +40,8 @@ void setupRGBLeds(String myChar);
 #endif
 
 #if(POWER_LED)
-void setupPowerLed(char* myChar);
+void setupRGBLeds(String myChar);
+void setupPowerLed(String myChar);
 #endif
 
 void connectWifi(char ssid[], char password[]);

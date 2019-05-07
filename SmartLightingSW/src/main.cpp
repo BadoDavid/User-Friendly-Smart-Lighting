@@ -20,7 +20,12 @@
   char mySSID[] = ""; //"1113-COYG";
   char myPassword[] = ""; //"arseneWenger4";
 
-  char led_state[11] = "RGB#ABCDEF";
+#if(RGB_LED)
+  char led_state[11] = "RGB#FFFFFF";
+#endif
+#if(POWER_LED)
+  char led_state[11] = "PWR#FFFFFF";
+#endif
 
   unsigned long currentTime = 0U;
 
@@ -114,7 +119,12 @@ void setup() {
 	{
 		Serial.println("RESET SETTINGS!!!");
 
-		String defLedState = "RGB#ABCDEF";
+#if(RGB_LED)
+		String defLedState = "RGB#FFFFFF";
+#endif
+#if(POWER_LED)
+		String defLedState = "PWR#FFFFFF";
+#endif
 		/* Reset settings */
 		WiFi.disconnect(false);
 		strcpy(led_state, defLedState.c_str());
@@ -145,7 +155,8 @@ void setup() {
 #endif
 
 #if(POWER_LED)
-	setupPowerLed(sLedState);
+	setupRGBLeds(sLedState);
+	//setupPowerLed(sLedState);
 #endif
 
 	/* Connect to the last configured WiFi AP */
@@ -276,6 +287,7 @@ void loop() {
 			{
 				Serial.println("Controll message!");
 
+#if(RGB_LED)
 				String ledType = "RGB#";
 				char buf [2];
 
@@ -293,6 +305,27 @@ void loop() {
 				analogWrite(bluePin, 1024-4*blueValue);
 				sprintf(buf, "%02x", blueValue);
 				ledType +=  buf;
+#endif
+#if(POWER_LED)
+				String ledType = "PWR#";
+
+				char buf [2];
+
+				int redValue = root["red"];
+				analogWrite(redPin, 1024-4*redValue);
+				sprintf(buf, "%02x", redValue);
+				ledType += buf;
+
+				int greenValue = root["green"];
+				analogWrite(greenPin, 1024-4*greenValue); // TODO comment out
+				sprintf(buf, "%02x", greenValue);
+				ledType +=  buf;
+
+				int blueValue = root["blue"];
+				analogWrite(bluePin, 1024-4*blueValue); // TODO comment out
+				sprintf(buf, "%02x", blueValue);
+				ledType +=  buf;
+#endif
 
 				strcpy(led_state, ledType.c_str());
 
@@ -317,19 +350,6 @@ void loop() {
 				configFile.close();
 				//end save
 			}
-
-//#if(RGB_LED)
-
-
-//#if(POWER_LED)
-//			if((messageType != 'N') && (num >= 0) && (num <= 256))
-//			{
-//				if(messageType == 'R')
-//				{
-//					analogWrite(redPin, 1024-4*num);
-//				}
-//			}
-//#endif
 		}
   	}
 

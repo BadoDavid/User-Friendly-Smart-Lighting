@@ -15,6 +15,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.service.carrier.CarrierService;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -23,8 +24,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -396,9 +400,9 @@ public class MainActivity extends AppCompatActivity
 
                                 DeviceItem item;
 
-                                if("NA".equals(smartLightingState))
+                                if(smartLightingState.contains("NA"))
                                 {
-                                    item = new DeviceItem("SmartBulb:".concat(ipAddr), "NA",
+                                    item = new DeviceItem("SmartBulb:".concat(ipAddr), smartLightingState.substring(0, 3),
                                                     new Long(0), ipAddr, server_port);
                                 }
                                 else
@@ -497,7 +501,18 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
 
+            Intent i = new Intent(MainActivity.this, APDiscoveryService.class);
+            stopService(i);
+
             setWifiFragment();
+
+            i = new Intent(MainActivity.this, APDiscoveryService.class);
+            i.putExtra(APDiscoveryService.EXTRA_SSID, wifiSSID);
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+                startForegroundService(i);
+            } else {
+                startService(i);
+            }
 
             return true;
         }
@@ -515,10 +530,6 @@ public class MainActivity extends AppCompatActivity
                     .show();
 
             //wifi.startScan();
-
-            // TODO: delete!!
-            Intent i = new Intent(MainActivity.this, APDiscoveryService.class);
-            stopService(i);
 
             return true;
         }
@@ -625,38 +636,103 @@ public class MainActivity extends AppCompatActivity
             int greenValue = (int) ((ledValue & 0x00FF00) >> 8);
             int blueValue = (int) (ledValue & 0x0000FF);
 
+            switch (device.getType()){
+                case "RGB":
+                    ColorPickerDialogBuilder
+                        .with(this)
+                        .setTitle("Choose color")
+                        .initialColor(Color.rgb(redValue, greenValue, blueValue))
+                        .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
+                        .lightnessSliderOnly()
+                        .density(10)
+                        .setOnColorSelectedListener(new OnColorSelectedListener() {
+                            @Override
+                            public void onColorSelected(int selectedColor) {
+                                //toast("onColorSelected: 0x" + Integer.toHexString(selectedColor));
+                                Toast.makeText(getApplicationContext(),
+                                        "onColorSelected: 0x" + Integer.toHexString(selectedColor), Toast.LENGTH_LONG).show();
+
+                                onDeviceChanged(device, selectedColor & 0x00FFFFFF);
+                            }
+                        })
+                        .setPositiveButton("ok", new ColorPickerClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                                //changeBackgroundColor(selectedColor);
+                            }
+                        })
+                        .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                        .build()
+                        .show();
+                    break;
+                case "PWR":
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    // Get the layout inflater
+                    LayoutInflater inflater = getLayoutInflater();
+
+                    View myV = (View) inflater.inflate(R.layout.fragseekbar, null);
+
+                    SeekBar sbBright = myV.findViewById(R.id.seekBar);
+
+                    sbBright.setProgress(redValue);
+
+                    sbBright.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                        @Override
+                        public void onProgressChanged(SeekBar seekBar, int i, boolean b) { }
+
+                        @Override
+                        public void onStartTrackingTouch(SeekBar seekBar) {
+
+                        }
+
+                        @Override
+                        public void onStopTrackingTouch(SeekBar seekBar) {
+                            int bValue = seekBar.getProgress();
+                            int ledValue = (bValue << 16) | ((bValue) << 8) | bValue;
+                            onDeviceChanged(device, ledValue & 0x00FFFFFF);
+                            //onDeviceChanged('R', seekBar.getProgress());
+                        }
+                    });
+
+                    // Inflate and set the layout for the dialog
+                    // Pass null as the parent view because its going in the dialog layout
+                    builder.setView(myV)
+                            // Add action buttons
+                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // sign in the user ...
+                                }
+                            })
+                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    //LoginDialogFragment.this.getDialog().cancel();
+                                }
+                            });
+
+
+
+                    builder.create().show();
+                    /*
+                    Intent showDetailsIntent = new Intent();
+                    showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
+                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
+                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
+                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_STATE, device.getState());
+                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
+                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
+                    startActivity(showDetailsIntent);
+                    */
+                    break;
+                default:
+                    break;
+            }
+
             //Toast.makeText(getApplicationContext(), device.getState().toString(), Toast.LENGTH_LONG).show();
-
-            ColorPickerDialogBuilder
-                    .with(this)
-                    .setTitle("Choose color")
-                    .initialColor(Color.rgb(redValue, greenValue, blueValue))
-                    .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
-                    .lightnessSliderOnly()
-                    .density(10)
-                    .setOnColorSelectedListener(new OnColorSelectedListener() {
-                        @Override
-                        public void onColorSelected(int selectedColor) {
-                            //toast("onColorSelected: 0x" + Integer.toHexString(selectedColor));
-                            Toast.makeText(getApplicationContext(),
-                                    "onColorSelected: 0x" + Integer.toHexString(selectedColor), Toast.LENGTH_LONG).show();
-
-                            onDeviceChanged(device, selectedColor & 0x00FFFFFF);
-                        }
-                    })
-                    .setPositiveButton("ok", new ColorPickerClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                            //changeBackgroundColor(selectedColor);
-                        }
-                    })
-                    .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                        }
-                    })
-                    .build()
-                    .show();
 
 //        if(networkFine) {
             /*
@@ -797,43 +873,59 @@ public class MainActivity extends AppCompatActivity
                             int greenValue = (int) ((ledValue & 0x00FF00) >> 8);
                             int blueValue = (int) (ledValue & 0x0000FF);
 
+                            switch (device.getType()){
+                                case "RGB":
+                                    ColorPickerDialogBuilder
+                                        .with(builder.getContext())
+                                        .setTitle("Choose color")
+                                        .initialColor(Color.WHITE)
+                                        .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
+                                        .lightnessSliderOnly()
+                                        .density(10)
+                                        .setOnColorChangedListener(new OnColorChangedListener() {
+                                            @Override
+                                            public void onColorChanged(int selectedColor) {
+                                                Toast.makeText(getApplicationContext(),
+                                                        "onColorSelected: 0x" + Integer.toHexString(selectedColor), Toast.LENGTH_LONG).show();
+
+                                                onDeviceChanged(device, selectedColor & 0x00FFFFFF);
+                                            }
+                                        })
+                                        .setOnColorSelectedListener(new OnColorSelectedListener() {
+                                            @Override
+                                            public void onColorSelected(int selectedColor) {
+                                                //toast("onColorSelected: 0x" + Integer.toHexString(selectedColor));
+                                            }
+                                        })
+                                        .setPositiveButton("ok", new ColorPickerClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                                                //changeBackgroundColor(selectedColor);
+                                            }
+                                        })
+                                        .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                            }
+                                        })
+                                        .build()
+                                        .show();
+                                    break;
+                                case "PWR":
+                                    Intent showDetailsIntent = new Intent();
+                                    showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
+                                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
+                                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
+                                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_STATE, device.getState());
+                                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
+                                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
+                                    startActivity(showDetailsIntent);
+                                    break;
+                                default:
+                                    break;
+                            }
+
                             //Toast.makeText(getApplicationContext(), device.getState().toString(), Toast.LENGTH_LONG).show();
-
-                            ColorPickerDialogBuilder
-                                    .with(builder.getContext())
-                                    .setTitle("Choose color")
-                                    .initialColor(Color.WHITE)
-                                    .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
-                                    .lightnessSliderOnly()
-                                    .density(10)
-                                    .setOnColorChangedListener(new OnColorChangedListener() {
-                                        @Override
-                                        public void onColorChanged(int selectedColor) {
-                                            Toast.makeText(getApplicationContext(),
-                                                    "onColorSelected: 0x" + Integer.toHexString(selectedColor), Toast.LENGTH_LONG).show();
-
-                                            onDeviceChanged(device, selectedColor & 0x00FFFFFF);
-                                        }
-                                    })
-                                    .setOnColorSelectedListener(new OnColorSelectedListener() {
-                                        @Override
-                                        public void onColorSelected(int selectedColor) {
-                                            //toast("onColorSelected: 0x" + Integer.toHexString(selectedColor));
-                                        }
-                                    })
-                                    .setPositiveButton("ok", new ColorPickerClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                                            //changeBackgroundColor(selectedColor);
-                                        }
-                                    })
-                                    .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                        }
-                                    })
-                                    .build()
-                                    .show();
 
                             /*
                             Intent showDetailsIntent = new Intent();
@@ -934,7 +1026,7 @@ public class MainActivity extends AppCompatActivity
                     //String messageStr = color + String.valueOf(number);
 
                     udpSocket = new DatagramSocket();
-                    local = InetAddress.getByName(ipAddr);
+                    local = InetAddress.getByName(device.getAddress());
 
                     JSONObject object = new JSONObject();
 
@@ -966,4 +1058,13 @@ public class MainActivity extends AppCompatActivity
         }.start();
     }
 
+
+    @Override
+    protected void onDestroy() {
+
+        Intent i = new Intent(MainActivity.this, APDiscoveryService.class);
+        stopService(i);
+
+        super.onDestroy();
+    }
 }

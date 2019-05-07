@@ -8,31 +8,23 @@
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:paddingTop="8dp"
-    android:weightSum="4">
+    android:weightSum="5">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/DeviceType"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="@dimen/bigTextSize"
+        android:text="RGB Lighting"/>
+
+    <TextView
+        android:id="@+id/DeviceItemNameTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="3"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/DeviceItemNameTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textSize="@dimen/normalTextSize"
-            tools:text="Budapest" />
-
-        <TextView
-            android:id="@+id/DeviceType"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textSize="@dimen/smallTextSize"
-            android:text="RGB Lighting"/>
-
-    </LinearLayout>
+        android:textSize="@dimen/normalTextSize"
+        tools:text="Budapest" />
 
     <Button
         android:id="@+id/DeviceItemResetButton"

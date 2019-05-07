@@ -5,6 +5,7 @@
  *      Author: Badbeloved
  */
 #include "main.h"
+#include <string.h>
 
 int redPin = D5;
 int greenPin = D6;
@@ -14,16 +15,24 @@ bool apState = false;
 
 WiFiUDP udp;
 
-void setupPowerLed(char* myChar)
+void setupPowerLed(String myChar)
 {
   //set up LEDs
   pinMode(redPin, OUTPUT);
-  //digitalWrite(redPin, LOW);
-  analogWrite(redPin,512);
 
+  /*
+  analogWrite(redPin,512);
   delay(1000);
-  //digitalWrite(redPin, HIGH);
   analogWrite(redPin,1024);
+  */
+
+  int redValue = strtol(myChar.substring(4,6).c_str(), NULL, 16); Serial.print(redValue);
+  int greenValue = strtol(myChar.substring(6,8).c_str(), NULL, 16); Serial.print(greenValue);
+  int blueValue = strtol(myChar.substring(8,10).c_str(), NULL, 16); Serial.print(blueValue);
+
+  analogWrite(redPin,1024-(4*redValue));
+  //analogWrite(greenPin,1024-(4*greenValue));
+  //analogWrite(bluePin,1024-(4*blueValue));
 }
 
 void setupRGBLeds(String myChar)
@@ -178,7 +187,9 @@ void UDPmulticast()
 		if(apState)
 		{
 			ipno = WiFi.softAPIP();
-			stateLed = "NA";
+			stateLed = led_state;
+			stateLed = stateLed.substring(0, 4);
+			stateLed.concat("NA");
 		}
 		else
 		{
