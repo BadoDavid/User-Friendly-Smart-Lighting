@@ -4,17 +4,18 @@ public class DeviceItem
 {
     private String name;
     private String type;
-    private Long state;
+    private Integer state;
     private String address;
     private Integer port;
+    private Boolean turnedOn;
 
-    public DeviceItem(String name, String type, Long state, String address, Integer port) {
-
+    public DeviceItem(String name, String type, Integer state, String address, Integer port, Boolean turnedOn) {
         this.name = name;
         this.type = type;
         this.state = state;
         this.address = address;
         this.port = port;
+        this.turnedOn = turnedOn;
     }
 
     public String getName() {
@@ -33,11 +34,11 @@ public class DeviceItem
         this.type = type;
     }
 
-    public Long getState() {
+    public Integer getState() {
         return state;
     }
 
-    public void setState(Long state) {
+    public void setState(Integer state) {
         this.state = state;
     }
 
@@ -55,6 +56,14 @@ public class DeviceItem
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public Boolean getTurnedOn() {
+        return turnedOn;
+    }
+
+    public void setTurnedOn(Boolean turnedOn) {
+        this.turnedOn = turnedOn;
     }
 
     @Override

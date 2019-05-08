@@ -28,6 +28,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -329,6 +330,8 @@ public class MainActivity extends AppCompatActivity
 
                         JSONObject jsonObj = new JSONObject(recvMsg);
 
+                        final String slName = jsonObj.getString("name");
+
                         ipAddr = jsonObj.getString("ip_address");
 
                         server_port = jsonObj.getInt("port_num");
@@ -402,15 +405,15 @@ public class MainActivity extends AppCompatActivity
 
                                 if(smartLightingState.contains("NA"))
                                 {
-                                    item = new DeviceItem("SmartBulb:".concat(ipAddr), smartLightingState.substring(0, 3),
-                                                    new Long(0), ipAddr, server_port);
+                                    item = new DeviceItem(slName, smartLightingState.substring(0, 3),
+                                                    0, ipAddr, server_port, true);
                                 }
                                 else
                                 {
-                                    Long ledValue = Long.valueOf(smartLightingState.substring(4,10), 16);
+                                    Integer ledValue = Integer.valueOf(smartLightingState.substring(4,10), 16);
 
-                                    item = new DeviceItem("SmartBulb:".concat(ipAddr), smartLightingState.substring(0, 3),
-                                                ledValue , ipAddr, server_port);
+                                    item = new DeviceItem(slName, smartLightingState.substring(0, 3),
+                                                ledValue , ipAddr, server_port, true);
                                 }
 
                                 adapter.addDevice(item);
@@ -630,7 +633,7 @@ public class MainActivity extends AppCompatActivity
 
         if(wifi.getConnectionInfo().getSSID().contains(wifiSSID)){
 
-            Long ledValue = device.getState();
+            Integer ledValue = device.getState();
 
             int redValue = (int) ((ledValue & 0xFF0000) >> 16);
             int greenValue = (int) ((ledValue & 0x00FF00) >> 8);
@@ -713,8 +716,6 @@ public class MainActivity extends AppCompatActivity
                                     //LoginDialogFragment.this.getDialog().cancel();
                                 }
                             });
-
-
 
                     builder.create().show();
                     /*
@@ -867,7 +868,7 @@ public class MainActivity extends AppCompatActivity
                     .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
 
-                            Long ledValue = device.getState();
+                            Integer ledValue = device.getState();
 
                             int redValue = (int) ((ledValue & 0xFF0000) >> 16);
                             int greenValue = (int) ((ledValue & 0x00FF00) >> 8);
@@ -912,6 +913,53 @@ public class MainActivity extends AppCompatActivity
                                         .show();
                                     break;
                                 case "PWR":
+                                    AlertDialog.Builder sbBuilder = new AlertDialog.Builder(builder.getContext());
+                                    // Get the layout inflater
+                                    LayoutInflater inflater = getLayoutInflater();
+
+                                    View myV = (View) inflater.inflate(R.layout.fragseekbar, null);
+
+                                    SeekBar sbBright = myV.findViewById(R.id.seekBar);
+
+                                    sbBright.setProgress(255);
+
+                                    sbBright.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                                        @Override
+                                        public void onProgressChanged(SeekBar seekBar, int i, boolean b) { }
+
+                                        @Override
+                                        public void onStartTrackingTouch(SeekBar seekBar) {
+
+                                        }
+
+                                        @Override
+                                        public void onStopTrackingTouch(SeekBar seekBar) {
+                                            int bValue = seekBar.getProgress();
+                                            int ledValue = (bValue << 16) | ((bValue) << 8) | bValue;
+                                            onDeviceChanged(device, ledValue & 0x00FFFFFF);
+                                            //onDeviceChanged('R', seekBar.getProgress());
+                                        }
+                                    });
+
+                                    // Inflate and set the layout for the dialog
+                                    // Pass null as the parent view because its going in the dialog layout
+                                    sbBuilder.setView(myV)
+                                            // Add action buttons
+                                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    // sign in the user ...
+                                                }
+                                            })
+                                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    //LoginDialogFragment.this.getDialog().cancel();
+                                                }
+                                            });
+
+                                    sbBuilder.create().show();
+
+                                    /*
                                     Intent showDetailsIntent = new Intent();
                                     showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
                                     showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
@@ -920,6 +968,7 @@ public class MainActivity extends AppCompatActivity
                                     showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
                                     showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
                                     startActivity(showDetailsIntent);
+                                    */
                                     break;
                                 default:
                                     break;
@@ -950,6 +999,95 @@ public class MainActivity extends AppCompatActivity
 
         // If device deleted start multicast handling
         handleMulticastMsg();
+    }
+
+    @Override
+    public void onDeviceNameChanged(final DeviceItem item) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Get the layout inflater
+        LayoutInflater inflater = getLayoutInflater();
+
+        View v = inflater.inflate(R.layout.dialog_change_name, null);
+
+        final EditText etName = v.findViewById(R.id.etDevName);
+
+        etName.setText(item.getName());
+
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the dialog layout
+        builder.setView(v)
+                // Add action buttons
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        // change name
+                        item.setName(etName.getText().toString());
+                        onDeviceChanged(item, item.getState());
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.create().show();
+    }
+
+    @Override
+    public void onDeviceSwitched(final DeviceItem item) {
+
+        new Thread() {
+            public void run() {
+
+                DatagramSocket udpSocket = null;
+                InetAddress local = null;
+
+                try
+                {
+                    //String messageStr = color + String.valueOf(number);
+
+                    udpSocket = new DatagramSocket();
+                    local = InetAddress.getByName(item.getAddress());
+
+                    JSONObject object = new JSONObject();
+
+                    String state;
+
+                    if(item.getTurnedOn())
+                    {
+                        state = "ON";
+                    }
+                    else
+                    {
+                        state = "OFF";
+                    }
+
+                    object.put("type", "Switch");
+                    object.put("state", state);
+
+                    System.out.print(object.toString());
+
+                    String stringMsg =  object.toString();
+
+                    byte[] msg = stringMsg.getBytes();
+
+                    System.out.println(msg.length);
+
+                    //DatagramPacket p = new DatagramPacket(message, message.length,local,udpPort);
+
+                    DatagramPacket p = new DatagramPacket(msg, msg.length, local, item.getPort());
+
+                    udpSocket.send(p);
+                }
+                catch(IOException e) {
+                    System.out.println(e.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+
     }
 
     @Override
@@ -990,7 +1128,7 @@ public class MainActivity extends AppCompatActivity
     }
     */
 
-    public static void OnDeviceStateChanged(int pos, Long number) {
+    public static void OnDeviceStateChanged(int pos, Integer number) {
         adapter.updateDeviceState(pos, number);
     }
 
@@ -1011,7 +1149,7 @@ public class MainActivity extends AppCompatActivity
         //finish();//finishing activity
         //listener.OnDeviceStateChanged( itemPos,ledValue);
 
-        adapter.updateDeviceState(pos, (long) ledValue);
+        adapter.updateDeviceState(pos, ledValue);
 
         //MainActivity.OnDeviceStateChanged(itemPos, ledValue);
 
@@ -1030,7 +1168,8 @@ public class MainActivity extends AppCompatActivity
 
                     JSONObject object = new JSONObject();
 
-                    object.put("type", "Controll");
+                    object.put("type", "Config");
+                    object.put("device_name", device.getName());
                     object.put("red", redValue);
                     object.put("green", greenValue);
                     object.put("blue", blueValue);

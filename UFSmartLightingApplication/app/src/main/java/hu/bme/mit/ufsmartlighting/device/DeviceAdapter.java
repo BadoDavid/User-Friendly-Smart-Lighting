@@ -1,5 +1,6 @@
 package hu.bme.mit.ufsmartlighting.device;
 
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,8 +38,20 @@ public class DeviceAdapter extends RecyclerView.Adapter implements DeviceViewHol
         DeviceViewHolder holder = (DeviceViewHolder) viewHolder;
 
         DeviceItem item = devices.get(position);
-        holder.nameTextView.setText(devices.get(position).getName());
-        holder.typeTextView.setText(devices.get(position).getType());
+        holder.nameTextView.setText(item.getName());
+        holder.typeTextView.setText(item.getType());
+
+        if(item.getTurnedOn()) {
+            Integer ledValue = item.getState();
+
+            int redValue = (int) ((ledValue & 0xFF0000) >> 16);
+            int greenValue = (int) ((ledValue & 0x00FF00) >> 8);
+            int blueValue = (int) (ledValue & 0x0000FF);
+
+            holder.itemView.setBackgroundColor(Color.rgb(redValue, greenValue, blueValue));
+            //holder.itemView.setBackgroundColor(Color.rgb(redValue, greenValue, blueValue));
+        }
+
         holder.item = item;
     }
 
@@ -64,7 +77,7 @@ public class DeviceAdapter extends RecyclerView.Adapter implements DeviceViewHol
         return devices.indexOf(item);
     }
 
-    public void updateDeviceState(int position, Long state) {
+    public void updateDeviceState(int position, Integer state) {
 
         devices.get(position).setState(state);
 
@@ -104,5 +117,15 @@ public class DeviceAdapter extends RecyclerView.Adapter implements DeviceViewHol
         dvhListener.onDeviceDeleted(item);
 
         removeDevice(devices.indexOf(item));
+    }
+
+    @Override
+    public void onDeviceNameChanged(DeviceItem item) {
+        dvhListener.onDeviceNameChanged(item);
+    }
+
+    @Override
+    public void onDeviceSwitched(DeviceItem item) {
+        dvhListener.onDeviceSwitched(item);
     }
 }

@@ -28,6 +28,8 @@ extern int bluePin;
 
 extern bool apState;
 
+extern char devName[32];
+
 extern char led_state[11];
 
 extern int sentMulticasts;

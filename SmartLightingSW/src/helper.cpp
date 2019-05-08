@@ -30,7 +30,7 @@ void setupPowerLed(String myChar)
   int greenValue = strtol(myChar.substring(6,8).c_str(), NULL, 16); Serial.print(greenValue);
   int blueValue = strtol(myChar.substring(8,10).c_str(), NULL, 16); Serial.print(blueValue);
 
-  analogWrite(redPin,1024-(4*redValue));
+  analogWrite(redPin,(4*redValue));
   //analogWrite(greenPin,1024-(4*greenValue));
   //analogWrite(bluePin,1024-(4*blueValue));
 }
@@ -183,6 +183,7 @@ void UDPmulticast()
 
 		IPAddress ipno;
 		String stateLed;
+		String name = devName;
 
 		if(apState)
 		{
@@ -199,6 +200,7 @@ void UDPmulticast()
 
 		DynamicJsonBuffer jsonBuffer;
 		JsonObject& json = jsonBuffer.createObject();
+		json["name"] = name;
 		json["ip_address"] = ipno.toString();
 		json["port_num"] = 2807;
 		json["led_state"] = stateLed;

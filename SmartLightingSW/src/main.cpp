@@ -9,7 +9,7 @@
   unsigned long previousMillis = 0;
   const long interval = 5000;
 
-  const int packetSize = 100;
+  const int packetSize = 200;
   byte packetBuffer[packetSize];
 
   Ticker tickerMulticast;
@@ -19,6 +19,8 @@
 
   char mySSID[] = ""; //"1113-COYG";
   char myPassword[] = ""; //"arseneWenger4";
+
+  char devName[32] = "";
 
 #if(RGB_LED)
   char led_state[11] = "RGB#FFFFFF";
@@ -67,8 +69,10 @@ void setup() {
 	Serial.print(mac[3], HEX); Serial.print(":"); Serial.print(mac[2], HEX); Serial.print(":");
 	Serial.print(mac[1], HEX); Serial.print(":"); Serial.print(mac[0], HEX); Serial.println();
 
+	strcpy(devName, WiFi.macAddress().c_str());
+
 	//clean FS, for testing
-	//SPIFFS.format();
+	//SPIFFS.format(); // TODO: comment out
 
 	//read configuration from FS json
 	Serial.println("mounting FS...");
@@ -91,6 +95,8 @@ void setup() {
 		json.printTo(Serial);
 		if (json.success()) {
 		  Serial.println("\nparsed json");
+
+		  strcpy(devName, json["device_name"]);
 
 		  strcpy(led_state, json["led_state"]);
 
@@ -133,6 +139,7 @@ void setup() {
 	Serial.println("Resaving config");
 	DynamicJsonBuffer jsonBuffer;
 	JsonObject& json = jsonBuffer.createObject();
+	json["device_name"] = devName;
 	json["led_state"] = led_state;
 	json["current_time"] = 0U;
 	json["prev_time"] = currentTime;
@@ -155,8 +162,7 @@ void setup() {
 #endif
 
 #if(POWER_LED)
-	setupRGBLeds(sLedState);
-	//setupPowerLed(sLedState);
+	setupPowerLed(sLedState);
 #endif
 
 	/* Connect to the last configured WiFi AP */
@@ -201,6 +207,7 @@ void loop() {
 		Serial.println("Resaving config");
 		DynamicJsonBuffer jsonBuffer;
 		JsonObject& json = jsonBuffer.createObject();
+		json["device_name"] = devName;
 		json["led_state"] = led_state;
 		json["current_time"] = millis();
 		json["prev_time"] = currentTime;
@@ -283,10 +290,38 @@ void loop() {
 		}
 		else
 		{
-			if(!strcmp(type, "Controll"))
+			if(!strcmp(type, "Switch"))
 			{
-				Serial.println("Controll message!");
+				Serial.print("Switching message: ");
 
+				String sLedState = root["state"];
+
+				Serial.println(sLedState);
+
+				if(sLedState.equals("ON"))
+				{
+					sLedState = led_state;
+				}
+				else
+				{
+					sLedState = "PWR#000000";
+				}
+#if(RGB_LED)
+				setupRGBLeds(sLedState);
+#endif
+#if(POWER_LED)
+				//setupRGBLeds(sLedState);
+				setupPowerLed(sLedState);
+#endif
+			}
+			else if(!strcmp(type, "Config"))
+			{
+				Serial.println("Configuration message! ");
+
+				strcpy(devName, root["device_name"]);
+
+				Serial.print(devName);
+				Serial.print("");
 #if(RGB_LED)
 				String ledType = "RGB#";
 				char buf [2];
@@ -312,17 +347,17 @@ void loop() {
 				char buf [2];
 
 				int redValue = root["red"];
-				analogWrite(redPin, 1024-4*redValue);
+				analogWrite(redPin, 4*redValue);
 				sprintf(buf, "%02x", redValue);
 				ledType += buf;
 
 				int greenValue = root["green"];
-				analogWrite(greenPin, 1024-4*greenValue); // TODO comment out
+				//analogWrite(greenPin, 4*greenValue);
 				sprintf(buf, "%02x", greenValue);
 				ledType +=  buf;
 
 				int blueValue = root["blue"];
-				analogWrite(bluePin, 1024-4*blueValue); // TODO comment out
+				//analogWrite(bluePin, 4*blueValue);
 				sprintf(buf, "%02x", blueValue);
 				ledType +=  buf;
 #endif
@@ -336,6 +371,7 @@ void loop() {
 				Serial.println("saving config");
 				DynamicJsonBuffer jsonBuffer;
 				JsonObject& json = jsonBuffer.createObject();
+				json["device_name"] = devName;
 				json["led_state"] = led_state;
 				json["current_time"] = millis();
 				json["prev_time"] = currentTime;
