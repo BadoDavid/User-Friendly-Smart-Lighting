@@ -19,8 +19,8 @@
 
 //end of add your includes here
 
-#define RGB_LED			false
-#define POWER_LED		true
+#define RGB_LED			true
+#define POWER_LED		false
 
 extern int redPin;
 extern int greenPin;

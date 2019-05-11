@@ -174,10 +174,10 @@ int sentMulticasts = 0;
 
 void UDPmulticast()
 {
-	udp.beginMulticast(WiFi.localIP(), {224, 1, 1, 1}, 7235);
+	udp.beginMulticast(WiFi.localIP(), {224, 1, 1, 1}, 17235);
 
-	//Serial.print("Sending packet: IP address to "); Serial.print(IPAddress({224, 1, 1, 1})); Serial.print(':'); Serial.println(7235);
-	int result = udp.beginPacketMulticast({224, 1, 1, 1}, 7235, WiFi.localIP(), 20);
+	//Serial.print("Sending packet: IP address to "); Serial.print(IPAddress({224, 1, 1, 1})); Serial.print(':'); Serial.println(17235);
+	int result = udp.beginPacketMulticast({224, 1, 1, 1}, 17235, WiFi.localIP(), 20);
 	if (result == 1) {
 	  //udp.write(WiFi.localIP());
 

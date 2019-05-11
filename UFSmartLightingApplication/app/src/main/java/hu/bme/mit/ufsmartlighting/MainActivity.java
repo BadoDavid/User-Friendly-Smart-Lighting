@@ -303,7 +303,7 @@ public class MainActivity extends AppCompatActivity
                     int ipAddress = wifi.getConnectionInfo().getIpAddress();
                     InetAddress inetAddress = InetAddress.getByAddress(new byte[]{(byte) (ipAddress & 255), (byte) ((ipAddress >> 8) & 255), (byte) ((ipAddress >> 16) & 255), (byte) ((ipAddress >> 24) & 255)});
                     NetworkInterface byInetAddress = NetworkInterface.getByInetAddress(inetAddress);
-                    socket = new MulticastSocket(7235);
+                    socket = new MulticastSocket(17235);
                     socket.setNetworkInterface(byInetAddress);
                     socket.joinGroup(InetAddress.getByName("224.1.1.1"));
                     socket.setSoTimeout(10000);
