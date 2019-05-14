@@ -101,7 +101,7 @@ public class WiFiApDialogFragment extends AppCompatDialogFragment
                     //remember id
                     int netId = wifiManager.addNetwork(wifiConfig);
 
-                    if(!wifiManager.getConnectionInfo().getSSID().contains("Bado"))
+                    if(!wifiManager.getConnectionInfo().getSSID().contains("SLD"))
                     {
                         wifiManager.disconnect();
                         wifiManager.enableNetwork(netId, true);

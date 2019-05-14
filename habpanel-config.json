@@ -1,0 +1,108 @@
+{
+    "dashboards": [
+        {
+            "id": "Kitchen",
+            "name": "Kitchen",
+            "widgets": [
+                {
+                    "name": "RGB LED",
+                    "sizeX": 2,
+                    "sizeY": 2,
+                    "item": "cRGBledDevice",
+                    "type": "colorpicker",
+                    "row": 1,
+                    "col": 0,
+                    "style": "aCKolor",
+                    "blur_background": true,
+                    "$$hashKey": "object:26"
+                },
+                {
+                    "name": "PWR Led Switch",
+                    "sizeX": 2,
+                    "sizeY": 2,
+                    "item": "sPWRledDevice",
+                    "type": "button",
+                    "row": 1,
+                    "col": 3,
+                    "command": "{\"type\":\"Switch\",\"state\":\"OFF\"}",
+                    "background": "#009933",
+                    "font_size": "20",
+                    "background_active": "#CC0000",
+                    "iconset": "eclipse-smarthome-classic",
+                    "icon": "switch",
+                    "icon_size": "50",
+                    "foreground": "#FFFFFF",
+                    "foreground_active": "#FFFFFF",
+                    "action_type": "toggle",
+                    "command_alt": "{\"type\":\"Switch\",\"state\":\"ON\"}",
+                    "$$hashKey": "object:27"
+                },
+                {
+                    "name": "PWR Led Brightness",
+                    "sizeX": 2,
+                    "sizeY": 2,
+                    "item": "cPWRledDevice",
+                    "type": "slider",
+                    "row": 3,
+                    "col": 3,
+                    "vertical": false,
+                    "floor": 0,
+                    "ceil": 100,
+                    "step": 1,
+                    "unit": "%",
+                    "backdrop_iconset": "eclipse-smarthome-classic",
+                    "backdrop_icon": "slider",
+                    "inverted": false,
+                    "bigslider": false,
+                    "backdrop_center": true,
+                    "$$hashKey": "object:28"
+                },
+                {
+                    "name": "RGB Switch",
+                    "sizeX": 2,
+                    "sizeY": 2,
+                    "item": "sRGBledDevice",
+                    "type": "button",
+                    "row": 3,
+                    "col": 0,
+                    "action_type": "toggle",
+                    "command": "{\"type\":\"Switch\",\"state\":\"OFF\"}",
+                    "command_alt": "{\"type\":\"Switch\",\"state\":\"ON\"}",
+                    "background": "#009933",
+                    "foreground": "#FFFFFF",
+                    "font_size": "20",
+                    "background_active": "#CC0000",
+                    "foreground_active": "#FFFFFF",
+                    "iconset": "eclipse-smarthome-classic",
+                    "icon": "switch",
+                    "icon_size": "40",
+                    "icon_replacestext": false,
+                    "$$hashKey": "object:29"
+                },
+                {
+                    "name": "",
+                    "sizeX": 6,
+                    "sizeY": 4,
+                    "type": "frame",
+                    "row": 1,
+                    "col": 5,
+                    "url_source": "static",
+                    "frameUrl": "http://localhost:3000/render/d-solo/gaxOu-iWz/new-dashboard-copy?orgId=1&from=now-24h&to=now&refresh=1m&panelId=2&width=900&height=600&tz=Europe%2FBudapest",
+                    "refresh": 60,
+                    "frameless": false,
+                    "hidelabel": true,
+                    "$$hashKey": "object:30"
+                }
+            ],
+            "row": 0,
+            "col": 0,
+            "$$hashKey": "object:18"
+        }
+    ],
+    "menucolumns": 3,
+    "settings": {
+        "theme": "default",
+        "show_header_clock": true
+    },
+    "customwidgets": {}
+}

@@ -35,53 +35,6 @@ public class APDiscoveryService extends Service {
     int netCount=0;
     private String mySSID;
 
-    /**
-     * BroadcastReceiver which handles WifiScan results
-     */
-    /*
-    private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context c, Intent intent) {
-            wifiList = wifi.getScanResults();
-
-            netCount = wifiList.size();
-            // wifiScanAdapter.notifyDataSetChanged();
-            Log.d("Wifi","Total Wifi Network"+netCount);
-
-            // add your logic here
-            //if(!wifiOK) {
-                for (int j = 0; j < wifiList.size(); j++) {
-                    if (wifiList.get(j).SSID.contains("Bado")) {
-                        String networkSSID = wifiList.get(j).SSID;
-                        String networkPass = "";
-
-                        WifiConfiguration conf = new WifiConfiguration();
-                        conf.SSID = "\"" + networkSSID + "\"";   // Please note the quotes. String should contain ssid in quotes
-
-                        conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-
-                        wifi.addNetwork(conf);
-
-                        List<WifiConfiguration> list = wifi.getConfiguredNetworks();
-                        for (WifiConfiguration configs : list) {
-                            if (configs.SSID != null && configs.SSID.equals("\"" + networkSSID + "\"")) {
-                                wifi.disconnect();
-                                wifi.enableNetwork(configs.networkId, true);
-                                wifi.reconnect();
-                                //wifiOK = true;
-
-                                break;
-                            }
-                        }
-
-                        break;
-                    }
-                }
-            //}
-        }
-    };
-    */
-
     private class MyTimeThread extends Thread {
         public void run() {
             Handler h = new Handler(APDiscoveryService.this.getMainLooper());
@@ -90,9 +43,11 @@ public class APDiscoveryService extends Service {
                 h.post(new Runnable() {
                     @Override
                     public void run() {
+                        /*
                         Toast.makeText(APDiscoveryService.this,
                                 new Date(System.currentTimeMillis()).toString(),
                                 Toast.LENGTH_SHORT).show();
+                                */
                     }
                 });
 
@@ -107,7 +62,7 @@ public class APDiscoveryService extends Service {
 
                     System.out.println(currentSSID);
 
-                    if(! ((currentSSID.equals("\""+mySSID+"\"")) || (currentSSID.contains("Bado"))))
+                    if(! ((currentSSID.equals("\""+mySSID+"\"")) || (currentSSID.contains("SLD"))))
                     {
                         List<WifiConfiguration> list = wifi.getConfiguredNetworks();
                         for (WifiConfiguration configs : list) {
@@ -124,7 +79,7 @@ public class APDiscoveryService extends Service {
                 }
 
                 try {
-                    sleep(15000);
+                    sleep(20000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

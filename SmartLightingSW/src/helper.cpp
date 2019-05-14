@@ -132,11 +132,12 @@ void connectWifi(char ssid[], char password[])
       if(i >= 30)
       {
         // start AP
-        char ssidMine[] = "Bado_Blub";
+    	String ssidMine = "SLD:"+WiFi.macAddress();
+        //char ssidMine[] = mac.c_str();
         char passwordMine[] = "";
         Serial.print("Configuring access point...\n");
         /* You can remove the password parameter if you want the AP to be open. */
-        WiFi.softAP(ssidMine, passwordMine);
+        WiFi.softAP(ssidMine.c_str(), passwordMine);
 
         IPAddress myIP = WiFi.softAPIP();
         Serial.print("AP created, the IP address: ");

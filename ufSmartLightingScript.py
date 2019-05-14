@@ -4,6 +4,7 @@ import socket
 import struct
 import json
 import os
+import subprocess
 
 #item need to be a string
 def make_rule_RGB_item(item):
@@ -17,14 +18,29 @@ def make_rule_RGB_item(item):
     rule +="val blue = (receivedCommand as HSBType).blue * 2.55 \n\t\t"
     rule +="\n\t\t"
     rule +='s'+item+'.sendCommand'
-    rule +='(" {\\"type\\":\\"Controll\\",\\"red\\":"+red.intValue.toString+",\\"green\\":"+green.intValue.toString+",\\"blue\\":"+blue.intValue.toString+"} ")'
+    rule +='(" {\\"type\\":\\"Config\\",\\"device_name\\":\\"'+name+'\\",\\"red\\":"+red.intValue.toString+",\\"green\\":"+green.intValue.toString+",\\"blue\\":"+blue.intValue.toString+"} ")'
     rule +="\n\t}\n"
+    rule +='end\n\n'
+    return rule
+
+def make_rule_PWR_item(item):
+    rule = "rule  \"c"+item+" changed rule\" \n"
+    rule +="when \n\t"
+    rule +="Item c"+item+" received command \n"
+    rule +="then \n\t"
+    rule +="val red = (receivedCommand as Number) * 2.55 \n\t"
+    rule +="val green = red \n\t"
+    rule +="val blue = red \n\t"
+    rule +="\n\t"
+    rule +='s'+item+'.sendCommand'
+    rule +='(" {\\"type\\":\\"Config\\",\\"device_name\\":\\"'+name+'\\",\\"red\\":"+red.intValue.toString+",\\"green\\":"+green.intValue.toString+",\\"blue\\":"+blue.intValue.toString+"} ")'
+    rule +="\n"
     rule +='end\n\n'
     return rule
 
 # http://stackoverflow.com/questions/603852/multicast-in-python
 MCAST_GRP = "224.1.1.1"
-MCAST_PORT = 7235
+MCAST_PORT = 17235
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
@@ -46,12 +62,9 @@ sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 ipAddrs = []
 smItems = []
 
-cntr = 0
-
-# TODO: move to the appropriate places
-items = open("./conf/items/default.items", "w")
+items = open("../conf/items/default.items", "w")
 #sitemap = open(".\conf\sitemaps\default.sitemap", "w")
-rules = open("./conf//rules/default.rules", "w")
+rules = open("../conf//rules/default.rules", "w")
 
 #sitemap.write("sitemap default label=\"My first sitemap\" \n")
 #sitemap.flush()
@@ -62,7 +75,7 @@ print("Hello! Multicast msg receiving...")
 cntr = 0
 
 while True:
-    data = sock.recvfrom(1024)
+    data = sock.recvfrom(2000)
     #print("Received something...")
     print(data[0])
 
@@ -70,16 +83,19 @@ while True:
 
     #print(json_obj['ip_address'])
 
+    nextDevName = json_obj ['name']
     nextIpAddr = json_obj ['ip_address']
     nextPortNum = json_obj ['port_num']
+    nextLedState = json_obj ['led_state']
 
     if(nextIpAddr not in ipAddrs):
         ipAddrs.append(nextIpAddr)
 
         cntr += 1
 
-        #TODO: use valid name!!!
-        name = "Bulb"+str(cntr)
+        name = nextDevName
+
+        led_state = nextLedState
 
         # fill items file
         #String Switch_A1 "SwitchA1" (bbsb) { udp=">[192.168.2.101:2807:]" }
@@ -87,17 +103,24 @@ while True:
         items.write(nextIpAddr+":"+str(nextPortNum))
         items.write(":]\" } \n")
         #Color LR_LEDLight_Color "LR_LEDLight_Color"
-        items.write("Color c"+name+" \"cItem"+name+"\"\n")
+        if("RGB" in led_state):
+            items.write("Color c"+name+" \"cItem"+name+"\"\n")
+        elif ("PWR" in led_state):
+            items.write("Number c"+name+" \"cItem"+name+"\"\n")
         items.flush()
         os.fsync(items.fileno())
 
         # fill sitemap file
-        smString = "\n\t\tColorpicker item=c"+name+" label=\""+name+"\" icon=\"light\""
+        if("RGB" in led_state):
+            smString = "\n\t\tColorpicker item=c"+name+" label=\""+name+"\" icon=\"light\""
+        elif ("PWR" in led_state):
+            smString = "\n\t\tSlider item=c"+name+" label=\""+name+"\" icon=\"light\""
+        #smString = "\n\t\tColorpicker item=c"+name+" label=\""+name+"\" icon=\"light\""
         smItems.append(smString)
         
-        sitemap = open("./conf/sitemaps/default.sitemap", "w")
+        sitemap = open("../conf/sitemaps/default.sitemap", "w")
         sitemap.write("sitemap default label=\"My first sitemap\" \n")
-        sitemap.write("{")
+        sitemap.write("{ \n\tSwitch item=MulticastHandling label=\"Scan available lights!\" icon=\"none\" mappings=[0=\"SCAN\"]")
         sitemap.write("\n\tFrame label=\"SmartLights\" { ")
         for smItem in smItems:
             sitemap.write(smItem)
@@ -107,7 +130,10 @@ while True:
         #os.fsync(sitemap.fileno())
 
         # fill rules file
-        rules.write(make_rule_RGB_item(name))
+        if("RGB" in led_state):
+            rules.write(make_rule_RGB_item(name))
+        elif ("PWR" in led_state):
+            rules.write(make_rule_PWR_item(name))
         rules.flush()
         os.fsync(rules.fileno())
         
@@ -115,7 +141,7 @@ while True:
     else:
         cntr += 1
 
-    if(cntr == 20):
+    if(cntr == 10):
         break;
 	
     #print(json_obj ['ip_address'])

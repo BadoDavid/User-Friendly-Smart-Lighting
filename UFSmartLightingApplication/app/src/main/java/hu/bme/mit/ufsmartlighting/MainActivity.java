@@ -1,6 +1,7 @@
 package hu.bme.mit.ufsmartlighting;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,6 +14,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.carrier.CarrierService;
@@ -73,6 +75,8 @@ public class MainActivity extends AppCompatActivity
 
     private SwipeRefreshLayout pullToRefresh;
 
+    private ProgressDialog progressDialog;
+
     private WifiManager.MulticastLock wifiLock;
     private WifiMonitoringReceiver wifiMonitoringReceiver;
 
@@ -82,6 +86,8 @@ public class MainActivity extends AppCompatActivity
     private String smartLightingState;
 
     private boolean wifiOK = false;
+
+    TextView tvConnectedWifiName;
 
     private String wifiSSID;
 
@@ -94,28 +100,84 @@ public class MainActivity extends AppCompatActivity
 
     int netCount=0;
 
+    private void createProgressDialog() {
+
+        progressDialog.setTitle("WiFi connectivty");
+
+        progressDialog.setMessage("Connect to another access point!");
+
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+
+        progressDialog.setCancelable(false);
+
+        progressDialog.create();
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //Toast.makeText(getApplicationContext(), "In progress...", Toast.LENGTH_SHORT).show();
+                progressDialog.show();
+            }
+        });
+
+    }
+
     /**
      * BroadcastReceiver which handle Wifi status changes
      */
     private final BroadcastReceiver mWifiStatusChenged = new BroadcastReceiver() {
         @Override
         public void onReceive(Context c, Intent intent) {
-            Toast.makeText(getApplicationContext(), "Wifi is state changed!!!!", Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), "Wifi is state changed!!!!", Toast.LENGTH_LONG).show();
 
             if(intent.getAction().equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
 
-                NetworkInfo networkInfo =
+                final NetworkInfo networkInfo =
                         intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
 
                 if(!networkInfo.isConnected()) {
                     //do stuff
                     networkFine = false;
+                    createProgressDialog();
+                }
+                else
+                {
+                    new AsyncTask<Void, Void, String>() {
+
+                        @Override
+                        protected void onPreExecute ()
+                        {
+                            progressDialog.setMessage("Connected!");
+                            //Toast.makeText(getApplicationContext(), "Completed!4!", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        protected String doInBackground(Void... voids)
+                        {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            return "Start multicast handling!";
+                        }
+
+                        @Override
+                        protected void onPostExecute(String s) {
+                            progressDialog.dismiss();
+                            tvConnectedWifiName.setText(wifi.getConnectionInfo().getSSID());
+                            pullToRefresh.setRefreshing(true);
+
+                            handleMulticastMsg();
+                            super.onPostExecute(s);
+                        }
+                    }.execute();
                 }
 
                 //Other actions implementation
             }
 
-            if(wifi.getConnectionInfo().getSSID().contains("Bado"))
+            if(wifi.getConnectionInfo().getSSID().contains("SLD"))
             {
                 //handleMulticastMsg(); TODO: somewhere else
                 wifiOK = true;
@@ -142,7 +204,7 @@ public class MainActivity extends AppCompatActivity
             // add your logic here
             if(!wifiOK) {
                 for (int j = 0; j < wifiList.size(); j++) {
-                    if (wifiList.get(j).SSID.contains("Bado")) {
+                    if (wifiList.get(j).SSID.contains("SLD")) {
                         String networkSSID = wifiList.get(j).SSID;
                         String networkPass = "";
 
@@ -155,7 +217,8 @@ public class MainActivity extends AppCompatActivity
 
                         List<WifiConfiguration> list = wifi.getConfiguredNetworks();
                         for (WifiConfiguration configs : list) {
-                            if (configs.SSID != null && configs.SSID.equals("\"" + networkSSID + "\"")) {
+                            if (configs.SSID != null && configs.SSID.equals("\"" + networkSSID + "\""))
+                            {
                                 wifi.disconnect();
                                 wifi.enableNetwork(configs.networkId, true);
                                 wifi.reconnect();
@@ -171,13 +234,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
             }
-
-            /*
-            if(wifiList.size() == 0)
-            {
-                wifi.startScan();
-            }
-            */
         }
     };
 
@@ -188,6 +244,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        tvConnectedWifiName = findViewById(R.id.tvConnectedWifi);
 
         initRecyclerView();
 
@@ -206,6 +264,8 @@ public class MainActivity extends AppCompatActivity
 
         setWifiMonitorRegistered(true);
 
+        progressDialog = new ProgressDialog(MainActivity.this);
+
         registerReceiver(mWifiScanReceiver,
                 new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
@@ -217,7 +277,9 @@ public class MainActivity extends AppCompatActivity
         wifiSSID = sharedPref.getString(getString(R.string.saved_wifi_ssid), defaultValue);
         wifiPassword = sharedPref.getString(getString(R.string.saved_wifi_password), defaultValue);
 
-        Toast.makeText(getApplicationContext(), wifiSSID, Toast.LENGTH_SHORT).show();
+        tvConnectedWifiName.setText(wifiSSID);
+
+        //Toast.makeText(getApplicationContext(), wifiSSID, Toast.LENGTH_SHORT).show();
 
         // If password is not saved or SSID not equals to the saved value
         if(wifiPassword.equals(defaultValue) || wifiSSID.equals(defaultValue)) //|| !wifiSSID.equals(defaultValue))
@@ -225,32 +287,9 @@ public class MainActivity extends AppCompatActivity
             setWifiFragment();
         }
 
-        /*
-            int defaultValue = getResources().getInteger(R.integer.saved_high_score_default_key);
-            int highScore = sharedPref.getInt(getString(R.string.saved_high_score_key), defaultValue);
-         */
-
-        //wifi.disconnect();
-
-
-        //register Broadcast receiver
-        /*
-        this.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                wifiList=wifi.getScanResults();
-                netCount=wifiList.size();
-                //adapter.notifyDataSetChanged();
-                Log.d("Wifi","Total Wifi Network"+netCount);
-            }
-        },new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        */
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkandAskPermission();
         }
-
-        //wifi.startScan();
 
         Intent i = new Intent(MainActivity.this, APDiscoveryService.class);
         i.putExtra(APDiscoveryService.EXTRA_SSID, wifiSSID);
@@ -337,59 +376,6 @@ public class MainActivity extends AppCompatActivity
                         server_port = jsonObj.getInt("port_num");
 
                         smartLightingState = jsonObj.getString("led_state");
-
-                        /*
-                        ipAddr = "";
-
-                        // Java byte values are signed. Convert to an int so we don't have to deal with negative values for bytes >= 0x7f (unsigned).
-                        int[] valueBuf = new int[4];
-                        int ii;
-                        for (ii = 0; ii < (valueBuf.length-1); ii++) {
-                            valueBuf[ii] = (buf[ii] >= 0) ? (int) buf[ii] : (int) buf[ii] + 256;
-
-                            //final int value = (valueBuf[0] << 8) | valueBuf[1];
-
-                            ipAddr = ipAddr + String.valueOf(valueBuf[ii]) + ".";
-
-                        }
-
-                        valueBuf[ii] = (buf[ii] >= 0) ? (int) buf[ii] : (int) buf[ii] + 256;
-
-                        ipAddr = ipAddr + String.valueOf(valueBuf[ii]);
-
-                        ii++;
-
-                        server_port = (buf[ii] >= 0) ? (int) buf[ii] : (int) buf[ii] + 256;
-
-                        ii++;
-
-                        server_port += ((buf[ii] >= 0) ? (int) buf[ii] : (int) buf[ii] + 256) << 8;
-
-                        ii++;
-
-                        System.out.println(ipAddr);
-
-                        Log.d("MainActivity", ipAddr);
-
-                        final String myString = ipAddr + ":" + String.valueOf(server_port);
-
-                        String alreadyConnected = String.valueOf((buf[ii] >= 0) ? (int) buf[ii] : (int) buf[ii] + 256);
-
-                        System.out.println(alreadyConnected);
-
-                        if(alreadyConnected.equals("58")) {
-                            // save led state!
-                            for (; ii < 20; ii++) {
-                                smartLightingState = smartLightingState + String.valueOf((buf[ii] >= 0) ? (int) buf[ii] : (int) buf[ii] + 256);
-                            }
-                        }
-                        else
-                        {
-                            smartLightingState = myString;
-                        }
-
-                        System.out.println(smartLightingState);
-                        */
 
                         // We're running on a worker thread here, but we need to update the list view from the main thread
                         runOnUiThread(new Runnable() {
@@ -718,35 +704,10 @@ public class MainActivity extends AppCompatActivity
                             });
 
                     builder.create().show();
-                    /*
-                    Intent showDetailsIntent = new Intent();
-                    showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
-                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
-                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
-                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_STATE, device.getState());
-                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
-                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
-                    startActivity(showDetailsIntent);
-                    */
                     break;
                 default:
                     break;
             }
-
-            //Toast.makeText(getApplicationContext(), device.getState().toString(), Toast.LENGTH_LONG).show();
-
-//        if(networkFine) {
-            /*
-            Intent showDetailsIntent = new Intent();
-            showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
-            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
-            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
-            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_STATE, device.getState());
-            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
-            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
-            startActivity(showDetailsIntent);
-            */
-            //startActivityForResult(showDetailsIntent, DEVICE_STATE_REQUEST);
         }
         else
         {
@@ -828,6 +789,12 @@ public class MainActivity extends AppCompatActivity
 
                                         //DatagramPacket p = new DatagramPacket(message, message.length,local,server_port);
                                         udpSocket.send(p);
+
+                                        try {
+                                            Thread.sleep(3000);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
 
                                         /*
                                         String networkSSID = "S_Home";
@@ -958,36 +925,10 @@ public class MainActivity extends AppCompatActivity
                                             });
 
                                     sbBuilder.create().show();
-
-                                    /*
-                                    Intent showDetailsIntent = new Intent();
-                                    showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
-                                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
-                                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
-                                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_STATE, device.getState());
-                                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
-                                    showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
-                                    startActivity(showDetailsIntent);
-                                    */
                                     break;
                                 default:
                                     break;
                             }
-
-                            //Toast.makeText(getApplicationContext(), device.getState().toString(), Toast.LENGTH_LONG).show();
-
-                            /*
-                            Intent showDetailsIntent = new Intent();
-                            showDetailsIntent.setClass(MainActivity.this, DetailsActivity.class);
-                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_POSITION, devPos);
-                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_NAME, device.getName());
-                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_STATE, device.getState());
-                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_IPADDR, device.getAddress());
-                            showDetailsIntent.putExtra(DetailsActivity.EXTRA_DEVICE_PORT, device.getPort());
-                            startActivity(showDetailsIntent);
-                            */
-
-                            //startActivityForResult(showDetailsIntent, DEVICE_STATE_REQUEST);
                         }
                     });
             builder.create().show();
@@ -1104,29 +1045,6 @@ public class MainActivity extends AppCompatActivity
 
         Toast.makeText(getApplicationContext(), wifiApSSID, Toast.LENGTH_SHORT).show();
     }
-
-
-    /*
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        super.onActivityResult(requestCode, resultCode, data);
-        // Check which request we're responding to
-        if (requestCode == DEVICE_STATE_REQUEST) {
-            // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-
-                int pos = data.getIntExtra(DetailsActivity.EXTRA_DEVICE_POSITION, -1);
-                Long state = data.getLongExtra(DetailsActivity.EXTRA_DEVICE_STATE, new Long(0));
-
-                if(-1 != pos)
-                {
-                    adapter.updateDeviceState(pos, state);
-                }
-            }
-        }
-    }
-    */
 
     public static void OnDeviceStateChanged(int pos, Integer number) {
         adapter.updateDeviceState(pos, number);

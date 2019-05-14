@@ -12,12 +12,17 @@ def sendUDPmsg(cntr):
 
     clientSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+    sState = ""
+
+    if(cntr == 0):
+        sState = "OFF"
+    elif(cntr == 1):
+        sState = "ON"
+
     # a Python object (dict):
     x = {
-        "type": "Controll",
-        "red": (255-cntr*255),
-        "green": (255-cntr*255),
-        "blue": (255-cntr*255),
+        "type": "Switch",
+        "state": sState
     }
 
     # convert into JSON:
@@ -51,6 +56,5 @@ for device in devices:
                 cntr+=1
                 print("Button pressed!")
                 sendUDPmsg(cntr%2)
-        #add_bluetooth_button(device.phys)
         break
 print("NOT Found!\n")

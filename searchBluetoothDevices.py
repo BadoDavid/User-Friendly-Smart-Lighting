@@ -7,7 +7,7 @@ import os
 def add_bluetooth_button(mac):
     # http://stackoverflow.com/questions/603852/multicast-in-python
     MCAST_GRP = "224.1.1.1"
-    MCAST_PORT = 7235
+    MCAST_PORT = 17235
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
@@ -25,17 +25,7 @@ def add_bluetooth_button(mac):
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
     ipAddrs = []
-
-    data = sock.recvfrom(1024)
-    #print("Received something...")
-    print(data[0])
-
-    json_obj = json.loads(data[0])
-
-    #print(json_obj['ip_address'])
-
-    nextIpAddr = json_obj ['ip_address']
-    nextPortNum = json_obj ['port_num']
+    devNames = []
 
     items = open("./conf/items/default.items", "a+")
     items.write("String sBlBtn \"sItemBluetoothButton\"")
@@ -45,25 +35,53 @@ def add_bluetooth_button(mac):
     contents = sitemap.readlines()
     sitemap.close()
 
-    sValue = "\tFrame label=\"BluetoothButtons\" { \n\t\tSelection item=sBlBtn label=\"BL Controller\" "
-    sValue += "mappings=[0=\"\", 1=\""+nextIpAddr+"\"]\n\t}\n"
+    sValue = "\tFrame label=\"BluetoothButtons\" { \n\t\tSwitch item=sBlBtn label=\"BL Controller\" "
+    sValue += "mappings=[0=\"Reset\""
 
-    contents.insert(2, sValue)
+    rules = open("./conf//rules/default.rules", "a+")
+
+    rules.write("\nrule \"Button state changed\"")
+    rules.write("\nwhen\n")
+    rules.write("\t Item sBlBtn received command \nthen")
+    rules.write("\n\tif (receivedCommand == \"0\") \n\t{\n\t\t")
+    rules.write("executeCommandLine(\"pkill@@-f@@handleHIDmsg.py\")")
+    rules.write("\n\t}")
+
+    cntr = 0
+
+    while cntr < 10:
+        data = sock.recvfrom(1024)
+        #print("Received something...")
+        print(data[0])
+
+        json_obj = json.loads(data[0])
+
+        #print(json_obj['ip_address'])
+
+        nextDevName = json_obj ['name']
+
+        nextIpAddr = json_obj ['ip_address']
+        nextPortNum = json_obj ['port_num']
+
+        cntr += 1
+
+        if(nextIpAddr not in ipAddrs):
+            ipAddrs.append(nextIpAddr)
+            
+            sValue += ", "+str(cntr)+"=\""+nextDevName+"\""
+            rules.write("\n\tif (receivedCommand == \""+str(cntr)+"\") \n\t{\n\t\t")
+            rules.write("val results = executeCommandLine(\"/usr/bin/python@@/home/xannosz/Dokumentumok/openhab-2.4.0/handleHIDmsg.py@@"+nextIpAddr+"\")")
+            rules.write("\n\t\tlogInfo(\"execTest\", results)\n\t}")
+
+    sValue += "]\n\t}\n"
+    contents.insert(3, sValue)
 
     sitemap = open("./conf/sitemaps/default.sitemap", "w")
     contents = "".join(contents)
     sitemap.write(contents)
     sitemap.close()
 
-    rules = open("./conf//rules/default.rules", "a+")
-
-    rules.write("\nrule \"Button state changed\"")
-    rules.write("\nwhen\n")
-    rules.write("\t Item sBlBtn received command \n")
-    rules.write("then \n\t")
-    rules.write("if (receivedCommand != \"\") \n\t{\n\t\t")
-    rules.write("val results = executeCommandLine(\"/usr/bin/python@@/home/xannosz/Dokumentumok/openhab-2.4.0/handleHIDmsg.py\", 5000)")
-    rules.write("\n\t\tlogInfo(\"execTest\", results)\n\t}\nend\n\n")
+    rules.write("\nend\n\n")
     rules.close()
         
 
